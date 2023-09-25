@@ -87,7 +87,7 @@ void Nucleus::sample_single_pos (double pos[3])
         pos[2] = r_max*2.0*(drand48()-0.5);
 
         double r_sqr = pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2];
-        fits_dstribution = check_fits_distribution(r_sqr,SamplingDistribution::WoodsSaxon);
+        fits_dstribution = check_fits_distribution(r_sqr, SamplingDistribution::WoodsSaxon);
     }
 }
 
@@ -95,14 +95,14 @@ void Nucleus::sample_single_pos (double pos[3])
 bool Nucleus::check_fits_distribution(double r_sqr, SamplingDistribution dist) const
 {
     if (dist==SamplingDistribution::WoodsSaxon)
-        return r_sqr<std::pow(SamplingDistributions::woods_saxon_no_rho_0_inverse_cdf(drand48(),m_bulk_radius,m_mean_surface_diffusiveness),2);
-    else return false;
+        return r_sqr<std::pow(SamplingDistributions::woods_saxon_no_rho_0_inverse_cdf(drand48(), m_bulk_radius, m_mean_surface_diffusiveness), 2);
+    else return true;
 }
 
 
 void Nucleus::sample_pos()
 {
-    double center_of_mass[3] = {0.0};
+    double center_of_mass[3] = {0.0, 0.0, 0.0};
 
     for (uint n=0; n<m_atomic_num; n++)
     {
@@ -175,11 +175,9 @@ uint Nucleus::get_atomic_num() const
 }
 
 
-void Nucleus::get_nucleon_pos (double pos[3], uint nucleon_num) const
+const double* Nucleus::get_nucleon_pos (uint nucleon_num) const
 {
-    pos[0] = m_pos[nucleon_num*3];
-    pos[1] = m_pos[nucleon_num*3+1];
-    pos[2] = m_pos[nucleon_num*3+2];
+    return m_pos+3*nucleon_num;
 }
 
 
@@ -190,7 +188,12 @@ void Nucleus::safe_get_nucleon_pos (double pos[3], uint nucleon_num) const
         std::cerr << "Accessing nucleon outside of range. Truncating to last nucleon..." << std::endl;
         nucleon_num = m_atomic_num-1;
     }
-    get_nucleon_pos(pos,nucleon_num);
+
+    const double* pos_ptr = get_nucleon_pos(nucleon_num);
+
+    pos[0] = *pos_ptr;
+    pos[1] = *(pos_ptr+1);
+    pos[2] = *(pos_ptr+2);
 }
 
 
@@ -238,7 +241,7 @@ Nucleus::Nucleus (const Nucleus& other)
 {
     prepare_pos();
 
-    memcpy(m_pos,other.m_pos,3*m_atomic_num*sizeof(double));
+    memcpy(m_pos, other.m_pos, 3*m_atomic_num*sizeof(double));
 }
 
 
@@ -249,10 +252,10 @@ Nucleus& Nucleus::operator= (const Nucleus& other)
 
     safe_delete_pos();
 
-    memcpy(this,&other,sizeof(Nucleus));
+    memcpy(this, &other, sizeof(Nucleus));
 
     m_pos = new double [3*m_atomic_num];
-    memcpy(m_pos,other.m_pos,3*m_atomic_num*sizeof(double));
+    memcpy(m_pos, other.m_pos, 3*m_atomic_num*sizeof(double));
 
     return *this;
 }
@@ -265,7 +268,7 @@ Nucleus& Nucleus::operator= (Nucleus&& other)
 
     safe_delete_pos();
 
-    memcpy(this,&other,sizeof(Nucleus));
+    memcpy(this, &other, sizeof(Nucleus));
 
     other.m_pos = nullptr;
 

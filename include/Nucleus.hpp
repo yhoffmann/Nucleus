@@ -6,13 +6,10 @@
 #include <math.h>
 
 
-class NNEvent;
-
-
 enum class SamplingDistribution : unsigned char
 {
     WoodsSaxon,
-    ShellModelWaveFunctions
+    //ShellModelWaveFunctions
 };
 
 
@@ -33,7 +30,6 @@ class Nucleus
     void prepare_pos();
     void sample_single_pos(double pos[3]);
     bool check_fits_distribution(double param, SamplingDistribution dist) const;
-    void get_nucleon_pos(double pos[3], uint nucleon_num) const;
 
 public:
 
@@ -41,6 +37,7 @@ public:
     void export_nucleon_positions(const double impact_param[2], const std::string& filepath) const;
     double get_nucleus_thickness(double x, double y) const;
     uint get_atomic_num() const;
+    const double* get_nucleon_pos(uint nucleon_num) const;
     void safe_get_nucleon_pos(double pos[3], uint nucleon_num) const;
     double get_bulk_radius() const;
     double get_mean_surface_diffusiveness() const;
@@ -54,8 +51,6 @@ public:
     Nucleus& operator=(const Nucleus& other);
     Nucleus& operator=(Nucleus&& other);
     ~Nucleus();
-
-    friend class NNEvent;
 };
 
 
