@@ -3,6 +3,7 @@
 #include <fstream>
 #include <cstring>
 #include <random>
+#include <stdlib.h>
 #include "../include/Nucleus.hpp"
 #include "../include/constants.hpp"
 #include "../include/NuclearParameters.hpp"
@@ -194,7 +195,7 @@ Nucleus::Nucleus (const Nucleus& other)
 {
     prepare_pos();
 
-    memcpy(m_pos, other.m_pos, 3*m_atomic_num*sizeof(double));
+    std::copy(other.m_pos, other.m_pos+m_atomic_num, m_pos);
 }
 
 
@@ -205,10 +206,14 @@ Nucleus& Nucleus::operator= (const Nucleus& other)
 
     safe_delete_pos();
 
-    memcpy(this, &other, sizeof(Nucleus));
+    m_rng = other.m_rng;
+    m_atomic_num = other.m_atomic_num;
+    m_mean_bulk_radius = other.m_mean_bulk_radius;
+    m_mean_surface_diffusiveness = other.m_mean_surface_diffusiveness;
+    m_sigma_nn = other.m_sigma_nn;
 
     m_pos = new double [3*m_atomic_num];
-    memcpy(m_pos, other.m_pos, 3*m_atomic_num*sizeof(double));
+    std::copy(other.m_pos, other.m_pos+m_atomic_num, m_pos);
 
     return *this;
 }
@@ -221,7 +226,12 @@ Nucleus& Nucleus::operator= (Nucleus&& other)
 
     safe_delete_pos();
 
-    memcpy(this, &other, sizeof(Nucleus));
+    m_rng = other.m_rng;
+    m_atomic_num = other.m_atomic_num;
+    m_mean_bulk_radius = other.m_mean_bulk_radius;
+    m_mean_surface_diffusiveness = other.m_mean_surface_diffusiveness;
+    m_pos = other.m_pos;
+    m_sigma_nn = other.m_sigma_nn;
 
     other.m_pos = nullptr;
 
