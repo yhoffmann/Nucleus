@@ -11,21 +11,35 @@
 
 void Nucleus::set_mean_bulk_radius()
 {
-    m_mean_bulk_radius = NuclearParameters::mean_bulk_radius(m_atomic_num);
+    m_mean_bulk_radius = fmToGeVm1*NuclearParameters::mean_bulk_radius(m_atomic_num);
 }
 
 
 void Nucleus::set_mean_nucleus_diffusiveness()
 {
-    m_mean_surface_diffusiveness = NuclearParameters::mean_surface_diffusiveness(m_atomic_num);
+    m_mean_surface_diffusiveness = fmToGeVm1*NuclearParameters::mean_surface_diffusiveness(m_atomic_num);
+}
+
+
+void Nucleus::set_sampling_range()
+{
+    switch (m_sampling_distribution)
+    {
+        case SamplingDistribution::WoodsSaxon:
+            m_sampling_range = m_mean_bulk_radius+10.0*m_mean_surface_diffusiveness;
+        break;
+
+        case SamplingDistribution::Gaussian:
+        break;
+    }
 }
 
 
 void Nucleus::safe_delete_pos()
 {
-    if (m_pos)
-        delete[] m_pos;
-    m_pos = nullptr;
+    if (m_nucleon_pos)
+        delete[] m_nucleon_pos;
+    m_nucleon_pos = nullptr;
 }
 
 
@@ -33,47 +47,53 @@ void Nucleus::prepare_pos()
 {
     safe_delete_pos();
 
-    m_pos = new double [m_atomic_num*3];
+    m_nucleon_pos = new double [m_atomic_num*3];
+    if (m_nucleon_pos == nullptr)
+        exit(2);
 }
 
 
 void Nucleus::sample_single_pos (double pos[3])
 {
-    double r_max = m_mean_bulk_radius+10.0*m_mean_surface_diffusiveness;
-
-    bool fits_dstribution = 0;
-    while(!fits_dstribution)
+    while(true)
     {
-        pos[0] = r_max*2.0*(m_rand()-0.5);
-        pos[1] = r_max*2.0*(m_rand()-0.5);
-        pos[2] = r_max*2.0*(m_rand()-0.5);
+        pos[0] = m_sampling_range*2.0*(m_rand()-0.5);
+        pos[1] = m_sampling_range*2.0*(m_rand()-0.5);
+        pos[2] = m_sampling_range*2.0*(m_rand()-0.5);
 
         double r_sqr = pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2];
-        fits_dstribution = check_fits_distribution(r_sqr, SamplingDistribution::WoodsSaxon);
+        if (fits_distribution(r_sqr))
+            break;
     }
 }
 
 
-bool Nucleus::check_fits_distribution(double r_sqr, SamplingDistribution dist)
+bool Nucleus::fits_distribution (double r_sqr)
 {
-    if (dist==SamplingDistribution::WoodsSaxon)
-        return r_sqr<std::pow(SamplingDistributions::woods_saxon_no_rho_0_inverse_cdf(m_rand(), m_mean_bulk_radius, m_mean_surface_diffusiveness), 2);
-    else
-        return true;
+    switch (m_sampling_distribution)
+    {
+        case SamplingDistribution::WoodsSaxon:
+            return m_rand() < NormedSamplingDistributions::woods_saxon( std::sqrt(r_sqr), m_mean_bulk_radius, m_mean_surface_diffusiveness );
+
+        case SamplingDistribution::Gaussian:
+            return true;
+        break;
+    }
+    return true;
 }
 
 
-void Nucleus::sample()
+void Nucleus::sample_nucleon_pos()
 {
     double center_of_mass[3] = {0.0, 0.0, 0.0};
 
     for (uint n=0; n<m_atomic_num; n++)
     {
-        sample_single_pos(m_pos+n*3);
+        sample_single_pos(m_nucleon_pos+n*3);
 
-        center_of_mass[0] += m_pos[n*3];
-        center_of_mass[1] += m_pos[n*3+1];
-        center_of_mass[2] += m_pos[n*3+2];
+        center_of_mass[0] += m_nucleon_pos[n*3];
+        center_of_mass[1] += m_nucleon_pos[n*3+1];
+        center_of_mass[2] += m_nucleon_pos[n*3+2];
     }
 
     center_of_mass[0] /= double(m_atomic_num);
@@ -82,9 +102,9 @@ void Nucleus::sample()
 
     for (uint n=0; n<m_atomic_num; n++)
     {
-        m_pos[n*3] -= center_of_mass[0];
-        m_pos[n*3+1] -= center_of_mass[1];
-        m_pos[n*3+2] -= center_of_mass[2];
+        m_nucleon_pos[n*3] -= center_of_mass[0];
+        m_nucleon_pos[n*3+1] -= center_of_mass[1];
+        m_nucleon_pos[n*3+2] -= center_of_mass[2];
     }
 }
 
@@ -96,12 +116,12 @@ void Nucleus::export_nucleon_positions (const double impact_parameter[2], const 
     if (!filestream.is_open())
     {
         std::cerr << "Could not open file " << "Data/"+filename << std::endl;
-        exit(0);
+        exit(4);
     }
 
     for (uint n=0; n<m_atomic_num; n++)
     {
-        filestream << m_pos[n*3] << " " << m_pos[n*3+1] << " " << m_pos[n*3+2] << " " << impact_parameter[0] << " " << impact_parameter[1] << " " << std::sqrt(m_sigma_nn/M_PI)/2.0 << std::endl;
+        filestream << m_nucleon_pos[n*3] << " " << m_nucleon_pos[n*3+1] << " " << m_nucleon_pos[n*3+2] << " " << impact_parameter[0] << " " << impact_parameter[1] << " " << std::sqrt(m_nucleon_size/M_PI)/2.0 << std::endl;
     }
     filestream.close();
 
@@ -109,7 +129,7 @@ void Nucleus::export_nucleon_positions (const double impact_parameter[2], const 
     if (!filestream.is_open())
     {
         std::cerr << "Could not open file " << "Data/Radius"+filename << std::endl;
-        exit(0);
+        exit(4);
     }
 
     filestream << m_mean_bulk_radius << " " << impact_parameter[0] << " " << impact_parameter[1] << std::endl;
@@ -124,11 +144,11 @@ double Nucleus::get_nucleus_thickness (double x, double y) const
 
     for (uint n=0; n<m_atomic_num; n++)
     {
-        double r_sqr = (m_pos[n*3]-x)*(m_pos[n*3]-x)+(m_pos[n*3+1]-y)*(m_pos[n*3+1]-y);
+        double r_sqr = (m_nucleon_pos[n*3]-x)*(m_nucleon_pos[n*3]-x)+(m_nucleon_pos[n*3+1]-y)*(m_nucleon_pos[n*3+1]-y);
 
-        thickness += exp(-r_sqr/(2.0*m_sigma_nn));
+        thickness += exp(-r_sqr/(2.0*m_nucleon_size));
     }
-    return thickness/(2.0*M_PI*m_sigma_nn);
+    return thickness/(2.0*M_PI*m_nucleon_size);
 }
 
 
@@ -140,7 +160,7 @@ uint Nucleus::get_atomic_num() const
 
 const double* Nucleus::get_nucleon_pos (uint nucleon_num) const
 {
-    return m_pos+3*nucleon_num;
+    return m_nucleon_pos+3*nucleon_num;
 }
 
 
@@ -172,30 +192,36 @@ double Nucleus::get_mean_surface_diffusiveness() const
 }
 
 
-double Nucleus::get_sigma_nn() const
+double Nucleus::get_nucleon_size() const
 {
-    return m_sigma_nn;
+    return m_nucleon_size;
 }
 
 
-Nucleus::Nucleus (std::mt19937& rng, uint atomic_num)
-    : m_rng(rng), m_atomic_num(atomic_num)
+void Nucleus::set_nucleon_size (double nucleon_size)
+{
+    m_nucleon_size = nucleon_size;
+}
+
+
+Nucleus::Nucleus (uint atomic_num, std::mt19937& rng, SamplingDistribution sampling_distribution)
+    : m_atomic_num(atomic_num), m_sampling_distribution(sampling_distribution), m_rng(rng)
 {
     set_mean_bulk_radius();
     set_mean_nucleus_diffusiveness();
     
-    prepare_pos();
+    set_sampling_range();
 
-    sample();
+    prepare_pos();
+    sample_nucleon_pos();
 }
 
 
 Nucleus::Nucleus (const Nucleus& other)
-    : m_rng(other.m_rng), m_atomic_num(other.m_atomic_num), m_mean_bulk_radius(other.m_mean_bulk_radius), m_mean_surface_diffusiveness(other.m_mean_surface_diffusiveness)
+    : m_atomic_num(other.m_atomic_num), m_mean_bulk_radius(other.m_mean_bulk_radius), m_mean_surface_diffusiveness(other.m_mean_surface_diffusiveness), m_nucleon_size(other.m_nucleon_size), m_sampling_range(other.m_sampling_range), m_sampling_distribution(other.m_sampling_distribution), m_rng(other.m_rng)
 {
     prepare_pos();
-
-    std::copy(other.m_pos, other.m_pos+m_atomic_num, m_pos);
+    std::copy(other.m_nucleon_pos, other.m_nucleon_pos+3*m_atomic_num, m_nucleon_pos);
 }
 
 
@@ -206,14 +232,17 @@ Nucleus& Nucleus::operator= (const Nucleus& other)
 
     safe_delete_pos();
 
-    m_rng = other.m_rng;
     m_atomic_num = other.m_atomic_num;
     m_mean_bulk_radius = other.m_mean_bulk_radius;
     m_mean_surface_diffusiveness = other.m_mean_surface_diffusiveness;
-    m_sigma_nn = other.m_sigma_nn;
+    m_nucleon_size = other.m_nucleon_size;
+    
+    m_sampling_range = other.m_sampling_range;
+    m_sampling_distribution = other.m_sampling_distribution;
+    m_rng = other.m_rng;
 
-    m_pos = new double [3*m_atomic_num];
-    std::copy(other.m_pos, other.m_pos+m_atomic_num, m_pos);
+    prepare_pos();
+    std::copy(other.m_nucleon_pos, other.m_nucleon_pos+3*m_atomic_num, m_nucleon_pos);
 
     return *this;
 }
@@ -226,14 +255,16 @@ Nucleus& Nucleus::operator= (Nucleus&& other)
 
     safe_delete_pos();
 
-    m_rng = other.m_rng;
     m_atomic_num = other.m_atomic_num;
     m_mean_bulk_radius = other.m_mean_bulk_radius;
     m_mean_surface_diffusiveness = other.m_mean_surface_diffusiveness;
-    m_pos = other.m_pos;
-    m_sigma_nn = other.m_sigma_nn;
+    m_nucleon_size = other.m_nucleon_size;
+    
+    m_sampling_range = other.m_sampling_range;
+    m_sampling_distribution = other.m_sampling_distribution;
+    m_rng = other.m_rng;
 
-    other.m_pos = nullptr;
+    other.m_nucleon_pos = nullptr;
 
     return *this;
 }
@@ -242,13 +273,4 @@ Nucleus& Nucleus::operator= (Nucleus&& other)
 Nucleus::~Nucleus()
 {
     safe_delete_pos();
-}
-
-
-namespace SamplingDistributions
-{
-    double woods_saxon_no_rho_0_inverse_cdf(double rng_param, double bulk_radius, double mean_surface_diffusiveness)
-    {
-        return mean_surface_diffusiveness*log(1.0/rng_param-1.0)+bulk_radius;
-    }
 }
