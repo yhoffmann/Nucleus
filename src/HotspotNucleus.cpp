@@ -74,7 +74,7 @@ bool HotspotNucleus::fits_distribution (double r_sqr)
 void HotspotNucleus::set_hotspot_size (double hotspot_size)
 {
     m_hotspot_size = hotspot_size;
-    m_dist_gaussian = std::normal_distribution<double>(0.0, m_hotspot_size);
+    m_dist_gaussian = std::normal_distribution<double>(0.0, m_nucleon_size);
 }
 
 
