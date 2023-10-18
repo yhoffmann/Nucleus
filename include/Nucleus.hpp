@@ -59,7 +59,7 @@ public:
     Nucleus(Nucleus&&) = delete;
     Nucleus& operator=(const Nucleus& other);
     Nucleus& operator=(Nucleus&& other);
-    ~Nucleus();
+    virtual ~Nucleus();
 };
 
 
