@@ -3,7 +3,6 @@
 
 #include <random>
 #include "Nucleus.hpp"
-#include "constants.hpp"
 
 
 class HotspotNucleus : public Nucleus

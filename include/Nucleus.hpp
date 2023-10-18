@@ -5,7 +5,6 @@
 #include <string>
 #include <math.h>
 #include <random>
-#include "constants.hpp"
 
 
 enum class SamplingDistribution : unsigned char
