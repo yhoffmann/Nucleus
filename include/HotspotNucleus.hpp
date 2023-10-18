@@ -1,3 +1,6 @@
+#pragma once
+
+
 #include <random>
 #include "Nucleus.hpp"
 #include "constants.hpp"
