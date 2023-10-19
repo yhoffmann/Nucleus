@@ -115,7 +115,9 @@ void Nucleus::export_nucleon_positions (const double impact_parameter[2], const 
     filestream.open("Data/"+filename);
     if (!filestream.is_open())
     {
+#ifndef _QUIET
         std::cerr << "Could not open file " << "Data/"+filename << std::endl;
+#endif
         exit(4);
     }
 
@@ -128,7 +130,9 @@ void Nucleus::export_nucleon_positions (const double impact_parameter[2], const 
     filestream.open("Data/Radius"+filename);
     if (!filestream.is_open())
     {
+#ifndef _QUIET
         std::cerr << "Could not open file " << "Data/Radius"+filename << std::endl;
+#endif
         exit(4);
     }
 
@@ -168,7 +172,9 @@ void Nucleus::safe_get_nucleon_pos (double pos[3], uint nucleon_num) const
 {
     if (nucleon_num>m_atomic_num-1)
     {
+#ifndef _QUIET
         std::cerr << "Accessing nucleon outside of range. Truncating to last nucleon..." << std::endl;
+#endif
         nucleon_num = m_atomic_num-1;
     }
 
