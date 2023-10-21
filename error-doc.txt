@@ -1,0 +1,5 @@
+#error number, meaning
+30, no nuclear parameters for this isotope
+31, bad nucleon pos array alloc
+32, bad hotspot pos array alloc
+33, could not open file for output

@@ -49,7 +49,7 @@ void Nucleus::prepare_pos()
 
     m_nucleon_pos = new double [m_atomic_num*3];
     if (m_nucleon_pos == nullptr)
-        exit(2);
+        exit(31);
 }
 
 
@@ -118,7 +118,7 @@ void Nucleus::export_nucleon_positions (const double impact_parameter[2], const 
 #ifndef _QUIET
         std::cerr << "Could not open file " << "Data/"+filename << std::endl;
 #endif
-        exit(4);
+        exit(33);
     }
 
     for (uint n=0; n<m_atomic_num; n++)
@@ -133,7 +133,7 @@ void Nucleus::export_nucleon_positions (const double impact_parameter[2], const 
 #ifndef _QUIET
         std::cerr << "Could not open file " << "Data/Radius"+filename << std::endl;
 #endif
-        exit(4);
+        exit(33);
     }
 
     filestream << m_mean_bulk_radius << " " << impact_parameter[0] << " " << impact_parameter[1] << std::endl;

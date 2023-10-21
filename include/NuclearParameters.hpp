@@ -31,7 +31,7 @@ namespace NuclearParameters
                 return 6.62;
 
             default:
-                exit(1);
+                exit(30);
         }
     }
 
@@ -61,7 +61,7 @@ namespace NuclearParameters
                 return 0.546;
 
             default:
-                exit(1);
+                exit(30);
         }
     }
 }

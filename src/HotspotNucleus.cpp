@@ -17,7 +17,7 @@ void HotspotNucleus::prepare_hotspot_pos()
 
     m_hotspot_pos = new double [2*m_atomic_num*m_num_hotspots_per_nucleon];
     if (m_hotspot_pos == nullptr)
-        exit(3);
+        exit(32);
 }
 
 
