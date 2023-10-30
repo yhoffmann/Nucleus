@@ -23,16 +23,8 @@ void HotspotNucleus::prepare_hotspot_pos()
 
 void HotspotNucleus::sample_single_hotspot_pos (double* hotspot_pos)
 {
-    while (true)
-    {
-        hotspot_pos[0] = m_rand_gaussian();
-        hotspot_pos[1] = m_rand_gaussian();
-
-        double r_sqr = hotspot_pos[0]*hotspot_pos[0]+hotspot_pos[1]*hotspot_pos[1];
-
-        if (m_rand() < NormedSamplingDistributions::gaussian(r_sqr, m_nucleon_size))
-            return;
-    }
+    hotspot_pos[0] = m_rand_gaussian();
+    hotspot_pos[1] = m_rand_gaussian();
 }
 
 
@@ -68,6 +60,13 @@ void HotspotNucleus::sample_hotspots_single_nucleon (uint nucleon_num)
 bool HotspotNucleus::fits_distribution (double r_sqr)
 {
     return m_rand() < NormedSamplingDistributions::gaussian(r_sqr, m_nucleon_size);
+}
+
+
+void HotspotNucleus::set_nucleon_size (double nucleon_size)
+{
+    m_nucleon_size = nucleon_size;
+    m_dist_gaussian = std::normal_distribution<double>( 0.0, m_nucleon_size);
 }
 
 

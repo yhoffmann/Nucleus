@@ -62,7 +62,7 @@ void Nucleus::sample_single_pos (double pos[3])
         pos[2] = m_sampling_range*2.0*(m_rand()-0.5);
 
         double r_sqr = pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2];
-        if (fits_distribution(r_sqr))
+        if ( fits_distribution(r_sqr) )
             break;
     }
 }

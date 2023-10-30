@@ -11,7 +11,7 @@ class HotspotNucleus : public Nucleus
     double* m_hotspot_pos = nullptr;
     double m_hotspot_size;
 
-    std::normal_distribution<double> m_dist_gaussian;
+    std::normal_distribution<double> m_dist_gaussian = std::normal_distribution<double>(0.0, m_nucleon_size);
     inline double m_rand_gaussian() { return m_dist_gaussian(m_rng); }
 
     void safe_delete_hotspot_pos();
@@ -22,6 +22,7 @@ class HotspotNucleus : public Nucleus
 
 public:
 
+    void set_nucleon_size(double nucleon_size) override;
     void set_hotspot_size(double hotspot_size);
     void sample_hotspots();
     //double get_nucleus_thickness(double x, double y) const override;

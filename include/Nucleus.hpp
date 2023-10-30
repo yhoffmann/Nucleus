@@ -23,7 +23,7 @@ protected:
     double m_mean_bulk_radius; // GeVm1 // avg radius of nuclei
     double m_mean_surface_diffusiveness; // GeVm1 // nucleus surface diffusiveness
     double* m_nucleon_pos = nullptr; // 3D positions of nucleons, relative to center of mass
-    double m_nucleon_size = 3.3; // GeVm2 // interaction cross section of individual nucleon // TODO
+    double m_nucleon_size = std::sqrt(3.3); // GeVm2 // 1d size parameter of nucleon (sigma, std dev of normal distribution)
 
     double m_sampling_range;
     SamplingDistribution m_sampling_distribution;
@@ -49,7 +49,7 @@ public:
     void safe_get_nucleon_pos(double pos[3], uint nucleon_num) const;
     double get_mean_bulk_radius() const;
     double get_mean_surface_diffusiveness() const;
-    void set_nucleon_size(double sigma_nn);
+    virtual void set_nucleon_size(double sigma_nn);
     double get_nucleon_size() const;
 
     Nucleus() = delete;
