@@ -123,7 +123,7 @@ void Nucleus::export_nucleon_positions (const double impact_parameter[2], const 
 
     for (uint n=0; n<m_atomic_num; n++)
     {
-        filestream << m_nucleon_pos[n*3] << " " << m_nucleon_pos[n*3+1] << " " << m_nucleon_pos[n*3+2] << " " << impact_parameter[0] << " " << impact_parameter[1] << " " << std::sqrt(m_nucleon_size/M_PI)/2.0 << std::endl;
+        filestream << m_nucleon_pos[n*3] << " " << m_nucleon_pos[n*3+1] << " " << m_nucleon_pos[n*3+2] << " " << impact_parameter[0] << " " << impact_parameter[1] << " " << std::sqrt(m_nucleon_size/M_PI)/2.0 << std::endl; // TODO fix size
     }
     filestream.close();
 
