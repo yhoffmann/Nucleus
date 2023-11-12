@@ -10,7 +10,8 @@ namespace NuclearParameters
     {
         switch (atomic_num)
         {
-            case 1: // fallthrough
+            case 1:
+                return 1.0; // fm
 
             case 16: // O
                 return 2.608; // fm
@@ -40,7 +41,8 @@ namespace NuclearParameters
     {
         switch (atomic_num)
         {
-            case 1: // fallthrough
+            case 1:
+                return 1.0; // fm
 
             case 16: // O
                 return 0.513; // fm
