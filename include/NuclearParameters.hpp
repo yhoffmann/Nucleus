@@ -42,7 +42,7 @@ namespace NuclearParameters
         switch (atomic_num)
         {
             case 1:
-                return 1.0; // fm
+                return 0.01; // fm
 
             case 16: // O
                 return 0.513; // fm
