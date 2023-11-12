@@ -35,6 +35,7 @@ double HotspotNucleus::get_hotspot_thickness (double x, double y) const
 {
     double thickness = 0.0;
 
+    double inverse_r_divisor = 1.0/(2.0*m_hotspot_size*m_hotspot_size);
     for (uint i=0, i_max=2*m_atomic_num*m_num_hotspots_per_nucleon; i<i_max; i+=2)
     {
         double delta_x = x-m_hotspot_pos[i];
@@ -42,10 +43,10 @@ double HotspotNucleus::get_hotspot_thickness (double x, double y) const
 
         double r_sqr = delta_x*delta_x + delta_y*delta_y;
 
-        thickness += exp( -r_sqr/(2.0*m_hotspot_size*m_hotspot_size) );
+        thickness += exp( -r_sqr*inverse_r_divisor );
     }
 
-    return thickness/double(m_num_hotspots_per_nucleon)/(2.0*M_PI*m_hotspot_size*m_hotspot_size);
+    return thickness/double(m_num_hotspots_per_nucleon)*inverse_r_divisor/M_PI;
 }
 
 
