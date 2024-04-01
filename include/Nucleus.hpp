@@ -7,7 +7,22 @@
 #include <random>
 
 
-enum class SamplingDistribution : unsigned char
+#if (defined(__linux__) || defined(__APPLE__))
+#include <unistd.h>
+#define _GET_PROCESS_ID() getpid()
+
+#elif (defined(_WIN32) || defined(_WIN64))
+#include <windows.h>
+#define _GET_PROCESS_ID() GetCurrentProcessId()
+
+#else
+#error Unable to define _GET_PROCESS_ID() function
+
+#endif
+
+
+
+enum SamplingDistribution : unsigned char
 {
     WoodsSaxon,
     Gaussian
@@ -15,49 +30,60 @@ enum class SamplingDistribution : unsigned char
 };
 
 
+struct NucleonPos
+{
+    double x, y, z;
+
+    friend std::ostream& operator<<(std::ostream& stream, const NucleonPos& pos);
+};
+
+
 class Nucleus
 {
+protected:
+
+    uint m_atomic_num; // atomic number
+    double m_mean_bulk_radius; // GeVm1 // avg radius of nuclei
+    double m_mean_surface_diffusiveness; // GeVm1 // nucleus surface diffusiveness
+    NucleonPos* m_nucleon_pos = nullptr; // 3D positions of nucleons, relative to center of mass
+    double m_nucleon_size = std::sqrt(3.3); // GeVm1 // 1d size parameter of nucleon (for example std dev of normal distribution)
+
+    double m_sampling_range;
+    SamplingDistribution m_sampling_distribution;
+    std::mt19937& m_rng;
+    std::uniform_real_distribution<double> m_dist_01u = std::uniform_real_distribution<double>(0.0, 1.0);
+    
+    inline double m_rand() { return m_dist_01u(m_rng); }
+
 public:
 
     virtual void sample_nucleon_pos();
-    void export_nucleon_positions(const double impact_param[2], const std::string& filepath) const;
+    void export_nucleon_positions(double impact_param_x, double impact_param_y, const std::string& filepath) const;
     double get_nucleon_thickness(double x, double y) const;
     uint get_atomic_num() const;
-    const double* get_nucleon_pos(uint nucleon_num) const;
-    void safe_get_nucleon_pos(double pos[3], uint nucleon_num) const;
+    const NucleonPos* get_nucleon_pos(uint nucleon_num) const;
+    const NucleonPos* safe_get_nucleon_pos(uint nucleon_num) const;
     double get_mean_bulk_radius() const;
     double get_mean_surface_diffusiveness() const;
     virtual void set_nucleon_size(double sigma_nn);
     double get_nucleon_size() const;
 
     Nucleus() = delete;
-    Nucleus(uint atomic_num, std::mt19937& rng, SamplingDistribution sampling_distribution = SamplingDistribution::WoodsSaxon);
-    Nucleus(const Nucleus& other);
-    Nucleus(Nucleus&&) = delete;
-    Nucleus& operator=(const Nucleus& other);
-    Nucleus& operator=(Nucleus&& other);
+    Nucleus(uint atomic_num, std::mt19937& rng, SamplingDistribution sampling_distribution = WoodsSaxon);
+    Nucleus(const Nucleus&);
+    Nucleus(Nucleus&&);
+    Nucleus& operator=(const Nucleus&);
+    Nucleus& operator=(Nucleus&&);
     virtual ~Nucleus();
 
 protected:
-
-    uint m_atomic_num; // atomic number
-    double m_mean_bulk_radius; // GeVm1 // avg radius of nuclei
-    double m_mean_surface_diffusiveness; // GeVm1 // nucleus surface diffusiveness
-    double* m_nucleon_pos = nullptr; // 3D positions of nucleons, relative to center of mass
-    double m_nucleon_size = std::sqrt(3.3); // GeVm2 // 1d size parameter of nucleon (std dev of normal distribution)
-
-    double m_sampling_range;
-    SamplingDistribution m_sampling_distribution;
-    std::mt19937& m_rng;
-    std::uniform_real_distribution<double> m_dist_01u = std::uniform_real_distribution<double>(0.0, 1.0);
-    inline double m_rand() { return m_dist_01u(m_rng); }
 
     void set_mean_bulk_radius();
     void set_mean_surface_diffusiveness();
     void set_sampling_range();
     void safe_delete_pos();
     void prepare_pos();
-    void sample_single_pos(double pos[3]);
+    void sample_single_pos(NucleonPos* nucleon_pos);
     bool fits_nucleon_distribution(double r_sqr);
 };
 

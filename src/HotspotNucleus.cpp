@@ -1,6 +1,14 @@
 #include "../include/HotspotNucleus.hpp"
 
 
+std::ostream& operator<<(std::ostream& stream, const HotspotPos& pos)
+{
+    stream << pos.x<<" "<<pos.y;
+
+    return stream;
+}
+
+
 void HotspotNucleus::set_nucleon_size (double nucleon_size)
 {
     Nucleus::set_nucleon_size(nucleon_size);
@@ -35,18 +43,18 @@ double HotspotNucleus::get_hotspot_thickness (double x, double y) const
 {
     double thickness = 0.0;
 
-    double inverse_r_divisor = 1.0/(2.0*m_hotspot_size*m_hotspot_size);
-    for (uint i=0, i_max=2*m_atomic_num*m_num_hotspots_per_nucleon; i<i_max; i+=2)
+    double inverse_r_sqr_divisor = 1.0/(2.0*m_hotspot_size*m_hotspot_size);
+    for (uint i=0, i_max=m_atomic_num*m_num_hotspots_per_nucleon; i<i_max; ++i)
     {
-        double delta_x = x-m_hotspot_pos[i];
-        double delta_y = y-m_hotspot_pos[i+1];
+        double delta_x = x-m_hotspot_pos[i].x;
+        double delta_y = y-m_hotspot_pos[i].y;
 
         double r_sqr = delta_x*delta_x + delta_y*delta_y;
 
-        thickness += exp( -r_sqr*inverse_r_divisor );
+        thickness += exp( -r_sqr*inverse_r_sqr_divisor );
     }
 
-    return thickness/double(m_num_hotspots_per_nucleon)*inverse_r_divisor/M_PI;
+    return thickness/double(m_num_hotspots_per_nucleon)*inverse_r_sqr_divisor/M_PI;
 }
 
 
@@ -56,14 +64,15 @@ uint HotspotNucleus::get_num_hotspots_per_nucleon() const
 }
 
 
-const double* HotspotNucleus::get_hotspot_pos (uint nucleon_num, uint hotspot_num) const
+const HotspotPos* HotspotNucleus::get_hotspot_pos (uint nucleon_num, uint hotspot_num) const
 {
-    return m_hotspot_pos+2*nucleon_num*m_num_hotspots_per_nucleon+2*hotspot_num;
+    return m_hotspot_pos+nucleon_num*m_num_hotspots_per_nucleon+hotspot_num;
 }
 
 
 HotspotNucleus::HotspotNucleus (uint atomic_num, uint num_hotspots_per_nucleon, std::mt19937& rng, SamplingDistribution sampling_distribution)
-    : Nucleus(atomic_num, rng, sampling_distribution), m_num_hotspots_per_nucleon(num_hotspots_per_nucleon)
+    : Nucleus(atomic_num, rng, sampling_distribution)
+    , m_num_hotspots_per_nucleon(num_hotspots_per_nucleon)
 {   
     prepare_hotspot_pos();
     sample_hotspot_pos();
@@ -90,44 +99,45 @@ void HotspotNucleus::prepare_hotspot_pos()
 {
     safe_delete_hotspot_pos();
 
-    m_hotspot_pos = new double [2*m_atomic_num*m_num_hotspots_per_nucleon];
+    m_hotspot_pos = new(std::nothrow) HotspotPos [m_atomic_num*m_num_hotspots_per_nucleon];
     if (m_hotspot_pos == nullptr)
         exit(32);
 }
 
 
-void HotspotNucleus::sample_single_hotspot_pos (double hotspot_pos[2])
+void HotspotNucleus::sample_single_hotspot_pos (HotspotPos* hotspot_pos)
 {
-    hotspot_pos[0] = m_rand_gaussian();
-    hotspot_pos[1] = m_rand_gaussian();
+    hotspot_pos->x = m_rand_gaussian();
+    hotspot_pos->y = m_rand_gaussian();
 }
 
 
 void HotspotNucleus::sample_hotspots_single_nucleon (uint nucleon_num)
 {
-    double center_of_mass[2] = {0.0, 0.0};
+    HotspotPos center_of_mass = {0.0, 0.0};
 
     for (uint i=0; i<m_num_hotspots_per_nucleon; i++)
     {
-        double* hotspot_pos = m_hotspot_pos+2*nucleon_num*m_num_hotspots_per_nucleon+2*i;
+        HotspotPos* hotspot_pos = (HotspotPos*)get_hotspot_pos(nucleon_num, i);
         sample_single_hotspot_pos(hotspot_pos);
 
-        center_of_mass[0] += hotspot_pos[0];
-        center_of_mass[1] += hotspot_pos[1];
+        center_of_mass.x += hotspot_pos->x;
+        center_of_mass.y += hotspot_pos->y;
     }
 
-    center_of_mass[0] /= double(m_num_hotspots_per_nucleon);
-    center_of_mass[1] /= double(m_num_hotspots_per_nucleon);
+    double inverse_divisor = 1.0/double(m_num_hotspots_per_nucleon);
+    center_of_mass.x *= inverse_divisor;
+    center_of_mass.y *= inverse_divisor;
 
-    for (uint i=0; i<m_num_hotspots_per_nucleon; i++)
+    for (uint i=0; i<m_num_hotspots_per_nucleon; ++i)
     {
-        double* hotspot_pos = m_hotspot_pos+2*nucleon_num*m_num_hotspots_per_nucleon+2*i;
+        HotspotPos* hotspot_pos = (HotspotPos*)get_hotspot_pos(nucleon_num, i);
 
-        hotspot_pos[0] -= center_of_mass[0];
-        hotspot_pos[1] -= center_of_mass[1];
+        hotspot_pos->x -= center_of_mass.x;
+        hotspot_pos->y -= center_of_mass.y;
 
-        hotspot_pos[0] += m_nucleon_pos[3*nucleon_num];
-        hotspot_pos[1] += m_nucleon_pos[3*nucleon_num+1];
+        hotspot_pos->x += m_nucleon_pos[nucleon_num].x;
+        hotspot_pos->y += m_nucleon_pos[nucleon_num].y;
     }
 }
 

@@ -9,60 +9,59 @@
 #include "../include/NuclearParameters.hpp"
 
 
+std::ostream& operator<<(std::ostream& stream, const NucleonPos& pos)
+{
+    stream << pos.x<<" "<<pos.y<<" "<<pos.z;
+
+    return stream;
+}
+
+
 void Nucleus::sample_nucleon_pos()
 {
-    double center_of_mass[3] = {0.0, 0.0, 0.0};
+    NucleonPos center_of_mass = {0.0, 0.0, 0.0};
 
     for (uint n=0; n<m_atomic_num; n++)
     {
-        sample_single_pos(m_nucleon_pos+n*3);
+        sample_single_pos(m_nucleon_pos+n);
 
-        center_of_mass[0] += m_nucleon_pos[n*3];
-        center_of_mass[1] += m_nucleon_pos[n*3+1];
-        center_of_mass[2] += m_nucleon_pos[n*3+2];
+        center_of_mass.x += m_nucleon_pos[n].x;
+        center_of_mass.y += m_nucleon_pos[n].y;
+        center_of_mass.z += m_nucleon_pos[n].z;
     }
 
-    center_of_mass[0] /= double(m_atomic_num);
-    center_of_mass[1] /= double(m_atomic_num);
-    center_of_mass[2] /= double(m_atomic_num);
+    double inverse_divisor = 1.0/double(m_atomic_num);
+    center_of_mass.x *= inverse_divisor;
+    center_of_mass.y *= inverse_divisor;
+    center_of_mass.z *= inverse_divisor;
 
     for (uint n=0; n<m_atomic_num; n++)
     {
-        m_nucleon_pos[n*3] -= center_of_mass[0];
-        m_nucleon_pos[n*3+1] -= center_of_mass[1];
-        m_nucleon_pos[n*3+2] -= center_of_mass[2];
+        m_nucleon_pos[n].x -= center_of_mass.x;
+        m_nucleon_pos[n].y -= center_of_mass.y;
+        m_nucleon_pos[n].z -= center_of_mass.z;
     }
 }
 
 
-void Nucleus::export_nucleon_positions (const double impact_parameter[2], const std::string& filename) const
+void Nucleus::export_nucleon_positions (double impact_param_x, double impact_param_y, const std::string& filename) const
 {
     std::ofstream filestream;
-    filestream.open("Data/"+filename);
+    filestream.open(filename);
     if (!filestream.is_open())
     {
 #ifndef _QUIET
-        std::cerr << "Could not open file " << "Data/"+filename << std::endl;
+        std::cerr << "Could not open file " << filename << std::endl;
 #endif
         exit(33);
     }
+
+    filestream << "# " << m_mean_bulk_radius << " " << impact_param_x << " " << impact_param_y << std::endl; 
 
     for (uint n=0; n<m_atomic_num; n++)
     {
-        filestream << m_nucleon_pos[n*3] << " " << m_nucleon_pos[n*3+1] << " " << m_nucleon_pos[n*3+2] << " " << impact_parameter[0] << " " << impact_parameter[1] << " " << std::sqrt(m_nucleon_size/M_PI)/2.0 << std::endl; // TODO fix size
+        filestream << m_nucleon_pos[n].x << " " << m_nucleon_pos[n].y << " " << m_nucleon_pos[n].z << " " << impact_param_x << " " << impact_param_y << " " << m_nucleon_size << std::endl;
     }
-    filestream.close();
-
-    filestream.open("Data/Radius"+filename);
-    if (!filestream.is_open())
-    {
-#ifndef _QUIET
-        std::cerr << "Could not open file " << "Data/Radius"+filename << std::endl;
-#endif
-        exit(33);
-    }
-
-    filestream << m_mean_bulk_radius << " " << impact_parameter[0] << " " << impact_parameter[1] << std::endl;
 
     filestream.close();
 }
@@ -72,16 +71,17 @@ double Nucleus::get_nucleon_thickness (double x, double y) const
 {
     double thickness = 0.0;
 
+    double inverse_divisor = 1.0/(2.0*m_nucleon_size*m_nucleon_size);
     for (uint n=0; n<m_atomic_num; n++)
     {
-        double delta_x = x-m_nucleon_pos[n*3];
-        double delta_y = y-m_nucleon_pos[n*3+1];
+        double delta_x = x-m_nucleon_pos[n].x;
+        double delta_y = y-m_nucleon_pos[n].y;
 
         double r_sqr = delta_x*delta_x + delta_y*delta_y;
 
-        thickness += exp( -r_sqr/(2.0*m_nucleon_size) );
+        thickness += exp( -r_sqr*inverse_divisor );
     }
-    return thickness/(2.0*M_PI*m_nucleon_size);
+    return thickness*inverse_divisor/M_PI;
 }
 
 
@@ -91,13 +91,13 @@ uint Nucleus::get_atomic_num() const
 }
 
 
-const double* Nucleus::get_nucleon_pos (uint nucleon_num) const
+const NucleonPos* Nucleus::get_nucleon_pos (uint nucleon_num) const
 {
-    return m_nucleon_pos+3*nucleon_num;
+    return m_nucleon_pos+nucleon_num;
 }
 
 
-void Nucleus::safe_get_nucleon_pos (double pos[3], uint nucleon_num) const
+const NucleonPos* Nucleus::safe_get_nucleon_pos (uint nucleon_num) const
 {
     if (nucleon_num>m_atomic_num-1)
     {
@@ -107,11 +107,7 @@ void Nucleus::safe_get_nucleon_pos (double pos[3], uint nucleon_num) const
         nucleon_num = m_atomic_num-1;
     }
 
-    const double* pos_ptr = get_nucleon_pos(nucleon_num);
-
-    pos[0] = pos_ptr[0];
-    pos[1] = pos_ptr[1];
-    pos[2] = pos_ptr[2];
+    return get_nucleon_pos(nucleon_num);
 }
 
 
@@ -140,7 +136,9 @@ void Nucleus::set_nucleon_size (double nucleon_size)
 
 
 Nucleus::Nucleus (uint atomic_num, std::mt19937& rng, SamplingDistribution sampling_distribution)
-    : m_atomic_num(atomic_num), m_sampling_distribution(sampling_distribution), m_rng(rng)
+    : m_atomic_num(atomic_num)
+    , m_sampling_distribution(sampling_distribution)
+    , m_rng(rng)
 {
     set_mean_bulk_radius();
     set_mean_surface_diffusiveness();
@@ -153,10 +151,32 @@ Nucleus::Nucleus (uint atomic_num, std::mt19937& rng, SamplingDistribution sampl
 
 
 Nucleus::Nucleus (const Nucleus& other)
-    : m_atomic_num(other.m_atomic_num), m_mean_bulk_radius(other.m_mean_bulk_radius), m_mean_surface_diffusiveness(other.m_mean_surface_diffusiveness), m_nucleon_size(other.m_nucleon_size), m_sampling_range(other.m_sampling_range), m_sampling_distribution(other.m_sampling_distribution), m_rng(other.m_rng)
+    : m_atomic_num(other.m_atomic_num)
+    , m_mean_bulk_radius(other.m_mean_bulk_radius)
+    , m_mean_surface_diffusiveness(other.m_mean_surface_diffusiveness)
+    , m_nucleon_size(other.m_nucleon_size)
+    , m_sampling_range(other.m_sampling_range)
+    , m_sampling_distribution(other.m_sampling_distribution)
+    , m_rng(other.m_rng)
 {
     prepare_pos();
     std::copy(other.m_nucleon_pos, other.m_nucleon_pos+3*m_atomic_num, m_nucleon_pos);
+}
+
+
+Nucleus::Nucleus (Nucleus&& other)
+    : m_atomic_num(other.m_atomic_num)
+    , m_mean_bulk_radius(other.m_mean_bulk_radius)
+    , m_mean_surface_diffusiveness(other.m_mean_surface_diffusiveness)
+    , m_nucleon_size(other.m_nucleon_size)
+    , m_sampling_range(other.m_sampling_range)
+    , m_sampling_distribution(other.m_sampling_distribution)
+    , m_rng(other.m_rng)
+{
+    safe_delete_pos();
+    m_nucleon_pos = other.m_nucleon_pos;
+
+    other.m_nucleon_pos = nullptr;
 }
 
 
@@ -177,7 +197,7 @@ Nucleus& Nucleus::operator= (const Nucleus& other)
     m_rng = other.m_rng;
 
     prepare_pos();
-    std::copy(other.m_nucleon_pos, other.m_nucleon_pos+3*m_atomic_num, m_nucleon_pos);
+    std::copy(other.m_nucleon_pos, other.m_nucleon_pos+m_atomic_num, m_nucleon_pos);
 
     return *this;
 }
@@ -249,29 +269,29 @@ void Nucleus::prepare_pos()
 {
     safe_delete_pos();
 
-    m_nucleon_pos = new double [m_atomic_num*3];
+    m_nucleon_pos = new(std::nothrow) NucleonPos [m_atomic_num];
     if (m_nucleon_pos == nullptr)
         exit(31);
 }
 
 
-void Nucleus::sample_single_pos (double pos[3])
+void Nucleus::sample_single_pos (NucleonPos* nucleon_pos)
 {
     while(true)
     {
-        double sampled_pos[3];
+        NucleonPos sampled_pos;
 
-        sampled_pos[0] = m_sampling_range*2.0*(m_rand()-0.5);
-        sampled_pos[1] = m_sampling_range*2.0*(m_rand()-0.5);
-        sampled_pos[2] = m_sampling_range*2.0*(m_rand()-0.5);
+        sampled_pos.x = m_sampling_range*2.0*(m_rand()-0.5);
+        sampled_pos.y = m_sampling_range*2.0*(m_rand()-0.5);
+        sampled_pos.z = m_sampling_range*2.0*(m_rand()-0.5);
 
-        double r_sqr = sampled_pos[0]*sampled_pos[0]+sampled_pos[1]*sampled_pos[1]+sampled_pos[2]*sampled_pos[2];
+        double r_sqr = sampled_pos.x*sampled_pos.x + sampled_pos.y*sampled_pos.y + sampled_pos.z*sampled_pos.z;
 
-        if ( fits_nucleon_distribution(r_sqr) )
+        if (fits_nucleon_distribution(r_sqr))
         {
-            pos[0] = sampled_pos[0];
-            pos[1] = sampled_pos[1];
-            pos[2] = sampled_pos[2];
+            nucleon_pos->x = sampled_pos.x;
+            nucleon_pos->y = sampled_pos.y;
+            nucleon_pos->z = sampled_pos.z;
 
             return;
         }
