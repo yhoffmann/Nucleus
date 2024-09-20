@@ -33,16 +33,18 @@ public:
     const HotspotPos* get_hotspot_pos(uint nucleon_num, uint hotspot_num) const;
 
     HotspotNucleus() = delete;
-    HotspotNucleus(uint atomic_num, uint num_hotspots_per_nucleon, std::mt19937& rng, SamplingDistribution sampling_distribution = WoodsSaxon);
-    HotspotNucleus(const HotspotNucleus&) = delete;
-    HotspotNucleus(HotspotNucleus&&) = delete;
+    HotspotNucleus(uint atomic_num, uint num_hotspots_per_nucleon, uint seed, SamplingDistribution sampling_distribution = WoodsSaxon);
+    HotspotNucleus(const HotspotNucleus&);
+    HotspotNucleus(HotspotNucleus&&);
+    HotspotNucleus& operator=(const HotspotNucleus&);
+    HotspotNucleus& operator=(HotspotNucleus&&);
     ~HotspotNucleus();
 
 private:
 
     std::normal_distribution<double> m_dist_gaussian = std::normal_distribution<double>(0.0, m_nucleon_size);
     
-    inline double m_rand_gaussian() { return m_dist_gaussian(m_rng); }
+    inline double m_rand_gaussian() { return m_dist_gaussian(*m_rng); }
 
     void safe_delete_hotspot_pos();
     void prepare_hotspot_pos();

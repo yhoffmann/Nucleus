@@ -135,11 +135,12 @@ void Nucleus::set_nucleon_size (double nucleon_size)
 }
 
 
-Nucleus::Nucleus (uint atomic_num, std::mt19937& rng, SamplingDistribution sampling_distribution)
+Nucleus::Nucleus (uint atomic_num, uint seed, SamplingDistribution sampling_distribution)
     : m_atomic_num(atomic_num)
     , m_sampling_distribution(sampling_distribution)
-    , m_rng(rng)
 {
+    prepare_rng(seed);
+
     set_mean_bulk_radius();
     set_mean_surface_diffusiveness();
     
@@ -157,8 +158,9 @@ Nucleus::Nucleus (const Nucleus& other)
     , m_nucleon_size(other.m_nucleon_size)
     , m_sampling_range(other.m_sampling_range)
     , m_sampling_distribution(other.m_sampling_distribution)
-    , m_rng(other.m_rng)
 {
+    prepare_rng(*other.m_rng);
+
     prepare_pos();
     std::copy(other.m_nucleon_pos, other.m_nucleon_pos+3*m_atomic_num, m_nucleon_pos);
 }
@@ -168,15 +170,14 @@ Nucleus::Nucleus (Nucleus&& other)
     : m_atomic_num(other.m_atomic_num)
     , m_mean_bulk_radius(other.m_mean_bulk_radius)
     , m_mean_surface_diffusiveness(other.m_mean_surface_diffusiveness)
+    , m_nucleon_pos(other.m_nucleon_pos)
     , m_nucleon_size(other.m_nucleon_size)
     , m_sampling_range(other.m_sampling_range)
     , m_sampling_distribution(other.m_sampling_distribution)
     , m_rng(other.m_rng)
 {
-    safe_delete_pos();
-    m_nucleon_pos = other.m_nucleon_pos;
-
     other.m_nucleon_pos = nullptr;
+    other.m_rng = nullptr;
 }
 
 
@@ -185,8 +186,6 @@ Nucleus& Nucleus::operator= (const Nucleus& other)
     if (this==&other)
         return *this;
 
-    safe_delete_pos();
-
     m_atomic_num = other.m_atomic_num;
     m_mean_bulk_radius = other.m_mean_bulk_radius;
     m_mean_surface_diffusiveness = other.m_mean_surface_diffusiveness;
@@ -194,7 +193,8 @@ Nucleus& Nucleus::operator= (const Nucleus& other)
     
     m_sampling_range = other.m_sampling_range;
     m_sampling_distribution = other.m_sampling_distribution;
-    m_rng = other.m_rng;
+
+    prepare_rng(*other.m_rng);
 
     prepare_pos();
     std::copy(other.m_nucleon_pos, other.m_nucleon_pos+m_atomic_num, m_nucleon_pos);
@@ -208,11 +208,13 @@ Nucleus& Nucleus::operator= (Nucleus&& other)
     if (this==&other)
         return *this;
 
+    safe_delete_rng();
     safe_delete_pos();
 
     m_atomic_num = other.m_atomic_num;
     m_mean_bulk_radius = other.m_mean_bulk_radius;
     m_mean_surface_diffusiveness = other.m_mean_surface_diffusiveness;
+    m_nucleon_pos = other.m_nucleon_pos;
     m_nucleon_size = other.m_nucleon_size;
     
     m_sampling_range = other.m_sampling_range;
@@ -220,6 +222,7 @@ Nucleus& Nucleus::operator= (Nucleus&& other)
     m_rng = other.m_rng;
 
     other.m_nucleon_pos = nullptr;
+    other.m_rng = nullptr;
 
     return *this;
 }
@@ -227,6 +230,7 @@ Nucleus& Nucleus::operator= (Nucleus&& other)
 
 Nucleus::~Nucleus()
 {
+    safe_delete_rng();
     safe_delete_pos();
 }
 
@@ -272,6 +276,30 @@ void Nucleus::prepare_pos()
     m_nucleon_pos = new(std::nothrow) NucleonPos [m_atomic_num];
     if (m_nucleon_pos == nullptr)
         exit(31);
+}
+
+
+void Nucleus::safe_delete_rng()
+{
+    if (m_rng)
+        delete m_rng;
+    m_rng = nullptr;
+}
+
+
+void Nucleus::prepare_rng (uint seed)
+{
+    safe_delete_rng();
+
+    m_rng = new std::mt19937(seed);
+}
+
+
+void Nucleus::prepare_rng (const std::mt19937& rng)
+{
+    safe_delete_rng();
+
+    m_rng = new std::mt19937(rng);
 }
 
 

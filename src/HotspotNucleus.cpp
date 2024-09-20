@@ -70,12 +70,65 @@ const HotspotPos* HotspotNucleus::get_hotspot_pos (uint nucleon_num, uint hotspo
 }
 
 
-HotspotNucleus::HotspotNucleus (uint atomic_num, uint num_hotspots_per_nucleon, std::mt19937& rng, SamplingDistribution sampling_distribution)
-    : Nucleus(atomic_num, rng, sampling_distribution)
+HotspotNucleus::HotspotNucleus (uint atomic_num, uint num_hotspots_per_nucleon, uint seed, SamplingDistribution sampling_distribution)
+    : Nucleus(atomic_num, seed, sampling_distribution)
     , m_num_hotspots_per_nucleon(num_hotspots_per_nucleon)
 {   
     prepare_hotspot_pos();
     sample_hotspot_pos();
+}
+
+
+HotspotNucleus::HotspotNucleus (const HotspotNucleus& other)
+    : Nucleus(other)
+    , m_num_hotspots_per_nucleon(other.m_num_hotspots_per_nucleon)
+    , m_hotspot_size(other.m_hotspot_size)
+{
+    prepare_hotspot_pos();
+    std::copy(other.m_hotspot_pos, other.m_hotspot_pos + m_atomic_num*m_num_hotspots_per_nucleon, m_hotspot_pos);
+}
+
+
+HotspotNucleus::HotspotNucleus (HotspotNucleus&& other)
+    : Nucleus(std::move(other))
+    , m_num_hotspots_per_nucleon(other.m_num_hotspots_per_nucleon)
+    , m_hotspot_pos(other.m_hotspot_pos)
+    , m_hotspot_size(other.m_hotspot_size)
+{
+    other.m_hotspot_pos = nullptr;
+}
+
+
+HotspotNucleus& HotspotNucleus::operator= (const HotspotNucleus& other)
+{
+    if (this == &other)
+        return *this;
+
+    Nucleus::operator=(other);
+    m_num_hotspots_per_nucleon = other.m_num_hotspots_per_nucleon;
+    m_hotspot_pos = other.m_hotspot_pos;
+    m_hotspot_size = other.m_hotspot_size;
+
+    prepare_hotspot_pos();
+    std::copy(other.m_hotspot_pos, other.m_hotspot_pos + m_atomic_num*m_num_hotspots_per_nucleon, m_hotspot_pos);
+
+    return *this;
+}
+
+
+HotspotNucleus& HotspotNucleus::operator= (HotspotNucleus&& other)
+{
+    if (this == &other)
+        return *this;
+
+    Nucleus::operator=(std::move(other));
+    m_num_hotspots_per_nucleon = other.m_num_hotspots_per_nucleon;
+    m_hotspot_pos = other.m_hotspot_pos;
+    m_hotspot_size = other.m_hotspot_size;
+
+    other.m_hotspot_pos = nullptr;
+
+    return *this;
 }
 
 

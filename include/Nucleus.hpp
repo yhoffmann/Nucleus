@@ -7,21 +7,6 @@
 #include <random>
 
 
-#if (defined(__linux__) || defined(__APPLE__))
-#include <unistd.h>
-#define _GET_PROCESS_ID() getpid()
-
-#elif (defined(_WIN32) || defined(_WIN64))
-#include <windows.h>
-#define _GET_PROCESS_ID() GetCurrentProcessId()
-
-#else
-#error Unable to define _GET_PROCESS_ID() function
-
-#endif
-
-
-
 enum SamplingDistribution : unsigned char
 {
     WoodsSaxon,
@@ -50,10 +35,10 @@ protected:
 
     double m_sampling_range;
     SamplingDistribution m_sampling_distribution;
-    std::mt19937& m_rng;
+    std::mt19937* m_rng = nullptr;
     std::uniform_real_distribution<double> m_dist_01u = std::uniform_real_distribution<double>(0.0, 1.0);
     
-    inline double m_rand() { return m_dist_01u(m_rng); }
+    inline double m_rand() { return m_dist_01u(*m_rng); }
 
 public:
 
@@ -69,7 +54,7 @@ public:
     double get_nucleon_size() const;
 
     Nucleus() = delete;
-    Nucleus(uint atomic_num, std::mt19937& rng, SamplingDistribution sampling_distribution = WoodsSaxon);
+    Nucleus(uint atomic_num, uint seed, SamplingDistribution sampling_distribution = WoodsSaxon);
     Nucleus(const Nucleus&);
     Nucleus(Nucleus&&);
     Nucleus& operator=(const Nucleus&);
@@ -83,6 +68,9 @@ protected:
     void set_sampling_range();
     void safe_delete_pos();
     void prepare_pos();
+    void safe_delete_rng();
+    void prepare_rng(uint seed);
+    void prepare_rng(const std::mt19937& rng);
     void sample_single_pos(NucleonPos* nucleon_pos);
     bool fits_nucleon_distribution(double r_sqr);
 };
