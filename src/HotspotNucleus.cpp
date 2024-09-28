@@ -22,7 +22,7 @@ void HotspotNucleus::set_hotspot_size (double hotspot_size)
 }
 
 
-void HotspotNucleus::sample_hotspot_pos()
+void HotspotNucleus::sample_only_hotspot_pos()
 {
     for (uint n=0; n<m_atomic_num; n++)
     {
@@ -31,11 +31,11 @@ void HotspotNucleus::sample_hotspot_pos()
 }
 
 
-void HotspotNucleus::sample_nucleon_pos()
+void HotspotNucleus::sample()
 {
-    Nucleus::sample_nucleon_pos();
+    Nucleus::sample();
 
-    sample_hotspot_pos();
+    sample_only_hotspot_pos();
 }
 
 
@@ -75,7 +75,7 @@ HotspotNucleus::HotspotNucleus (uint atomic_num, uint num_hotspots_per_nucleon, 
     , m_num_hotspots_per_nucleon(num_hotspots_per_nucleon)
 {   
     prepare_hotspot_pos();
-    sample_hotspot_pos();
+    sample_only_hotspot_pos(); // nuc pos already samped in Nucleus constructor
 }
 
 

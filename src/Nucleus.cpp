@@ -17,7 +17,7 @@ std::ostream& operator<<(std::ostream& stream, const NucleonPos& pos)
 }
 
 
-void Nucleus::sample_nucleon_pos()
+void Nucleus::sample()
 {
     NucleonPos center_of_mass = {0.0, 0.0, 0.0};
 
@@ -147,7 +147,7 @@ Nucleus::Nucleus (uint atomic_num, uint seed, SamplingDistribution sampling_dist
     set_sampling_range();
 
     prepare_pos();
-    sample_nucleon_pos();
+    sample();
 }
 
 

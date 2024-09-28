@@ -26,8 +26,8 @@ public:
 
     void set_nucleon_size(double nucleon_size) override;
     void set_hotspot_size(double hotspot_size);
-    void sample_hotspot_pos();
-    void sample_nucleon_pos() override; // also resamples the hotspot positions
+    void sample_only_hotspot_pos();
+    void sample() override; // also resamples the hotspot positions
     double get_hotspot_thickness(double x, double y) const;
     uint get_num_hotspots_per_nucleon() const;
     const HotspotPos* get_hotspot_pos(uint nucleon_num, uint hotspot_num) const;

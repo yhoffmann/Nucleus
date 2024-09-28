@@ -41,7 +41,7 @@ protected:
 
 public:
 
-    virtual void sample_nucleon_pos();
+    virtual void sample();
     void export_nucleon_positions(double impact_param_x, double impact_param_y, const std::string& filepath) const;
     double get_nucleon_thickness(double x, double y) const;
     uint get_atomic_num() const;
