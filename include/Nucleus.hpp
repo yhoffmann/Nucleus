@@ -11,7 +11,6 @@ enum SamplingDistribution : unsigned char
 {
     WoodsSaxon,
     Gaussian
-    //ShellModelWaveFunctions
 };
 
 

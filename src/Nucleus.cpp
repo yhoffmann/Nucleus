@@ -237,13 +237,13 @@ Nucleus::~Nucleus()
 
 void Nucleus::set_mean_bulk_radius()
 {
-    m_mean_bulk_radius = fmToGeVm1*NuclearParameters::mean_bulk_radius(m_atomic_num);
+    m_mean_bulk_radius = fmToGeVm1*NuclearParameters::get(m_atomic_num).mean_bulk_radius;
 }
 
 
 void Nucleus::set_mean_surface_diffusiveness()
 {
-    m_mean_surface_diffusiveness = fmToGeVm1*NuclearParameters::mean_surface_diffusiveness(m_atomic_num);
+    m_mean_surface_diffusiveness = fmToGeVm1*NuclearParameters::get(m_atomic_num).mean_surface_diffusiveness;
 }
 
 
