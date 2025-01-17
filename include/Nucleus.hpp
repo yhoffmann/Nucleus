@@ -26,11 +26,11 @@ class Nucleus
 {
 protected:
 
-    uint m_atomic_num; // atomic number
+    uint m_atomic_num = 1; // atomic number
+    double m_nucleon_size = std::sqrt(3.3); // GeVm1 // 1d size parameter of nucleon (for example std dev of normal distribution)
     double m_mean_bulk_radius; // GeVm1 // avg radius of nuclei
     double m_mean_surface_diffusiveness; // GeVm1 // nucleus surface diffusiveness
     NucleonPos* m_nucleon_pos = nullptr; // 3D positions of nucleons, relative to center of mass
-    double m_nucleon_size = std::sqrt(3.3); // GeVm1 // 1d size parameter of nucleon (for example std dev of normal distribution)
 
     double m_sampling_range;
     SamplingDistribution m_sampling_distribution;
@@ -51,9 +51,11 @@ public:
     double get_mean_surface_diffusiveness() const;
     virtual void set_nucleon_size(double sigma_nn);
     double get_nucleon_size() const;
+    void seed(uint seed);
+    void seed(const std::mt19937& rng);
 
     Nucleus() = delete;
-    Nucleus(uint atomic_num, uint seed, SamplingDistribution sampling_distribution = WoodsSaxon);
+    Nucleus(uint seed, uint atomic_num = 1, double nucleon_size = std::sqrt(3.3), double mean_bulk_radius = 0.0001, double mean_surface_diffusiveness = 0.0, SamplingDistribution sampling_distribution = WoodsSaxon);
     Nucleus(const Nucleus&);
     Nucleus(Nucleus&&);
     Nucleus& operator=(const Nucleus&);

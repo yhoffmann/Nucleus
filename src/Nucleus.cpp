@@ -9,7 +9,7 @@
 #include "../include/NuclearParameters.hpp"
 
 
-std::ostream& operator<<(std::ostream& stream, const NucleonPos& pos)
+std::ostream& operator<< (std::ostream& stream, const NucleonPos& pos)
 {
     stream << pos.x<<" "<<pos.y<<" "<<pos.z;
 
@@ -135,8 +135,21 @@ void Nucleus::set_nucleon_size (double nucleon_size)
 }
 
 
-Nucleus::Nucleus (uint atomic_num, uint seed, SamplingDistribution sampling_distribution)
+void Nucleus::seed (uint seed)
+{
+    prepare_rng(seed);
+}
+
+
+void Nucleus::seed (const std::mt19937& rng)
+{
+    prepare_rng(rng);
+}
+
+
+Nucleus::Nucleus (uint seed, uint atomic_num, double nucleon_size, double mean_bulk_radius, double mean_surface_diffusiveness, SamplingDistribution sampling_distribution)
     : m_atomic_num(atomic_num)
+    , m_nucleon_size(nucleon_size)
     , m_sampling_distribution(sampling_distribution)
 {
     prepare_rng(seed);
@@ -153,9 +166,9 @@ Nucleus::Nucleus (uint atomic_num, uint seed, SamplingDistribution sampling_dist
 
 Nucleus::Nucleus (const Nucleus& other)
     : m_atomic_num(other.m_atomic_num)
+    , m_nucleon_size(other.m_nucleon_size)
     , m_mean_bulk_radius(other.m_mean_bulk_radius)
     , m_mean_surface_diffusiveness(other.m_mean_surface_diffusiveness)
-    , m_nucleon_size(other.m_nucleon_size)
     , m_sampling_range(other.m_sampling_range)
     , m_sampling_distribution(other.m_sampling_distribution)
 {
@@ -168,10 +181,10 @@ Nucleus::Nucleus (const Nucleus& other)
 
 Nucleus::Nucleus (Nucleus&& other)
     : m_atomic_num(other.m_atomic_num)
+    , m_nucleon_size(other.m_nucleon_size)
     , m_mean_bulk_radius(other.m_mean_bulk_radius)
     , m_mean_surface_diffusiveness(other.m_mean_surface_diffusiveness)
     , m_nucleon_pos(other.m_nucleon_pos)
-    , m_nucleon_size(other.m_nucleon_size)
     , m_sampling_range(other.m_sampling_range)
     , m_sampling_distribution(other.m_sampling_distribution)
     , m_rng(other.m_rng)
@@ -187,9 +200,9 @@ Nucleus& Nucleus::operator= (const Nucleus& other)
         return *this;
 
     m_atomic_num = other.m_atomic_num;
+    m_nucleon_size = other.m_nucleon_size;
     m_mean_bulk_radius = other.m_mean_bulk_radius;
     m_mean_surface_diffusiveness = other.m_mean_surface_diffusiveness;
-    m_nucleon_size = other.m_nucleon_size;
     
     m_sampling_range = other.m_sampling_range;
     m_sampling_distribution = other.m_sampling_distribution;
@@ -212,10 +225,10 @@ Nucleus& Nucleus::operator= (Nucleus&& other)
     safe_delete_pos();
 
     m_atomic_num = other.m_atomic_num;
+    m_nucleon_size = other.m_nucleon_size;
     m_mean_bulk_radius = other.m_mean_bulk_radius;
     m_mean_surface_diffusiveness = other.m_mean_surface_diffusiveness;
     m_nucleon_pos = other.m_nucleon_pos;
-    m_nucleon_size = other.m_nucleon_size;
     
     m_sampling_range = other.m_sampling_range;
     m_sampling_distribution = other.m_sampling_distribution;

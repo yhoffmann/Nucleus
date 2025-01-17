@@ -18,9 +18,9 @@ class HotspotNucleus : public Nucleus
 {
 private:
 
-    uint m_num_hotspots_per_nucleon;
-    HotspotPos* m_hotspot_pos = nullptr;
+    uint m_num_hotspots_per_nucleon = 3;
     double m_hotspot_size = std::sqrt(0.7); // 1d size parameter of hotspots (std dev of normal distribution)
+    HotspotPos* m_hotspot_pos = nullptr;
 
 public:
 
@@ -33,7 +33,7 @@ public:
     const HotspotPos* get_hotspot_pos(uint nucleon_num, uint hotspot_num) const;
 
     HotspotNucleus() = delete;
-    HotspotNucleus(uint atomic_num, uint num_hotspots_per_nucleon, uint seed, SamplingDistribution sampling_distribution = WoodsSaxon);
+    HotspotNucleus(uint seed, uint atomic_num = 1, uint num_hotspots_per_nucleon = 3, double nucleon_size = std::sqrt(3.3), double hotspot_size = std::sqrt(0.7), double mean_bulk_radius = 0.0001, double mean_surface_diffusiveness = 0.0, SamplingDistribution sampling_distribution = WoodsSaxon);
     HotspotNucleus(const HotspotNucleus&);
     HotspotNucleus(HotspotNucleus&&);
     HotspotNucleus& operator=(const HotspotNucleus&);

@@ -54,7 +54,7 @@ double HotspotNucleus::get_hotspot_thickness (double x, double y) const
         thickness += exp( -r_sqr*inverse_r_sqr_divisor );
     }
 
-    return thickness/double(m_num_hotspots_per_nucleon)*inverse_r_sqr_divisor/M_PI;
+    return thickness/double(m_num_hotspots_per_nucleon*M_PI)*inverse_r_sqr_divisor;
 }
 
 
@@ -70,13 +70,14 @@ const HotspotPos* HotspotNucleus::get_hotspot_pos (uint nucleon_num, uint hotspo
 }
 
 
-HotspotNucleus::HotspotNucleus (uint atomic_num, uint num_hotspots_per_nucleon, uint seed, SamplingDistribution sampling_distribution)
-    : Nucleus(atomic_num, seed, sampling_distribution)
+HotspotNucleus::HotspotNucleus (uint seed, uint atomic_num, uint num_hotspots_per_nucleon, double nucleon_size, double hotspot_size, double mean_bulk_radius, double mean_surface_diffusiveness, SamplingDistribution sampling_distribution)    
+    : Nucleus(seed, atomic_num, nucleon_size, mean_bulk_radius, mean_surface_diffusiveness, sampling_distribution)
     , m_num_hotspots_per_nucleon(num_hotspots_per_nucleon)
+    , m_hotspot_size(hotspot_size)
 {   
     prepare_hotspot_pos();
-    sample_only_hotspot_pos(); // nuc pos already samped in Nucleus constructor
-}
+    sample_only_hotspot_pos();
+}   
 
 
 HotspotNucleus::HotspotNucleus (const HotspotNucleus& other)
@@ -92,8 +93,8 @@ HotspotNucleus::HotspotNucleus (const HotspotNucleus& other)
 HotspotNucleus::HotspotNucleus (HotspotNucleus&& other)
     : Nucleus(std::move(other))
     , m_num_hotspots_per_nucleon(other.m_num_hotspots_per_nucleon)
-    , m_hotspot_pos(other.m_hotspot_pos)
     , m_hotspot_size(other.m_hotspot_size)
+    , m_hotspot_pos(other.m_hotspot_pos)
 {
     other.m_hotspot_pos = nullptr;
 }
