@@ -43,7 +43,8 @@ protected:
     std::lognormal_distribution<double> m_dist_lognorm = std::lognormal_distribution<double>(0.0, NucleusConstants::lognorm_sigma);
 
     inline double m_rand() { return m_dist_01u(*m_rng); }
-    inline double m_lognorm_rand() { return m_dist_lognorm(*m_rng); }
+    const double lognorm_rand_inverse_divisor = 1.0 / exp(NucleusConstants::lognorm_sigma * NucleusConstants::lognorm_sigma / 2.0);
+    inline double m_lognorm_rand() { return m_dist_lognorm(*m_rng) * lognorm_rand_inverse_divisor; }
 
 public:
 
