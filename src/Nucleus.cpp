@@ -340,7 +340,7 @@ void Nucleus::prepare_nucleon_weights()
 {
     safe_delete_nucleon_weights();
 
-    m_nucleon_pos = new(std::nothrow) NucleonPos [m_atomic_num];
+    m_nucleon_weights = new(std::nothrow) double [m_atomic_num];
     if (nullptr == m_nucleon_pos)
         exit(31);
 }
