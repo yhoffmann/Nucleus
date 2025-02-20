@@ -184,6 +184,12 @@ Nucleus::Nucleus (const Nucleus& other)
 
     prepare_pos();
     std::copy(other.m_nucleon_pos, other.m_nucleon_pos+3*m_atomic_num, m_nucleon_pos);
+
+    if (nullptr != other.m_nucleon_weights)
+    {
+        prepare_nucleon_weights();
+        std::copy(other.m_nucleon_weights, other.m_nucleon_weights + m_atomic_num, m_nucleon_weights);
+    }
 }
 
 
