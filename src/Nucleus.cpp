@@ -5,7 +5,6 @@
 #include <random>
 #include <stdlib.h>
 #include "../include/Nucleus.hpp"
-#include "../include/constants.hpp"
 #include "../include/NuclearParameters.hpp"
 
 
@@ -41,6 +40,15 @@ void Nucleus::sample()
         m_nucleon_pos[n].y -= center_of_mass.y;
         m_nucleon_pos[n].z -= center_of_mass.z;
     }
+}
+
+
+void Nucleus::sample_nucleon_weights()
+{
+    prepare_nucleon_weights();
+
+    for (uint n=0; n<m_atomic_num; n++)
+        m_nucleon_weights[n] = m_lognorm_rand();
 }
 
 
@@ -185,18 +193,20 @@ Nucleus::Nucleus (Nucleus&& other)
     , m_mean_bulk_radius(other.m_mean_bulk_radius)
     , m_mean_surface_diffusiveness(other.m_mean_surface_diffusiveness)
     , m_nucleon_pos(other.m_nucleon_pos)
+    , m_nucleon_weights(other.m_nucleon_weights)
     , m_sampling_range(other.m_sampling_range)
     , m_sampling_distribution(other.m_sampling_distribution)
     , m_rng(other.m_rng)
 {
     other.m_nucleon_pos = nullptr;
+    other.m_nucleon_weights = nullptr;
     other.m_rng = nullptr;
 }
 
 
 Nucleus& Nucleus::operator= (const Nucleus& other)
 {
-    if (this==&other)
+    if (this == &other)
         return *this;
 
     m_atomic_num = other.m_atomic_num;
@@ -210,7 +220,13 @@ Nucleus& Nucleus::operator= (const Nucleus& other)
     prepare_rng(*other.m_rng);
 
     prepare_pos();
-    std::copy(other.m_nucleon_pos, other.m_nucleon_pos+m_atomic_num, m_nucleon_pos);
+    std::copy(other.m_nucleon_pos, other.m_nucleon_pos + m_atomic_num, m_nucleon_pos);
+
+    if (nullptr != other.m_nucleon_weights)
+    {
+        prepare_nucleon_weights();
+        std::copy(other.m_nucleon_weights, other.m_nucleon_weights + m_atomic_num, m_nucleon_weights);
+    }
 
     return *this;
 }
@@ -218,23 +234,26 @@ Nucleus& Nucleus::operator= (const Nucleus& other)
 
 Nucleus& Nucleus::operator= (Nucleus&& other)
 {
-    if (this==&other)
+    if (this == &other)
         return *this;
 
     safe_delete_rng();
     safe_delete_pos();
+    safe_delete_nucleon_weights();
 
     m_atomic_num = other.m_atomic_num;
     m_nucleon_size = other.m_nucleon_size;
     m_mean_bulk_radius = other.m_mean_bulk_radius;
     m_mean_surface_diffusiveness = other.m_mean_surface_diffusiveness;
     m_nucleon_pos = other.m_nucleon_pos;
+    m_nucleon_weights = other.m_nucleon_weights;
     
     m_sampling_range = other.m_sampling_range;
     m_sampling_distribution = other.m_sampling_distribution;
     m_rng = other.m_rng;
 
     other.m_nucleon_pos = nullptr;
+    other.m_nucleon_weights = nullptr;
     other.m_rng = nullptr;
 
     return *this;
@@ -245,18 +264,19 @@ Nucleus::~Nucleus()
 {
     safe_delete_rng();
     safe_delete_pos();
+    safe_delete_nucleon_weights();
 }
 
 
 void Nucleus::set_mean_bulk_radius()
 {
-    m_mean_bulk_radius = fmToGeVm1*NuclearParameters::get(m_atomic_num).mean_bulk_radius;
+    m_mean_bulk_radius = NucleusConstants::fmToGeVm1*NuclearParameters::get(m_atomic_num).mean_bulk_radius;
 }
 
 
 void Nucleus::set_mean_surface_diffusiveness()
 {
-    m_mean_surface_diffusiveness = fmToGeVm1*NuclearParameters::get(m_atomic_num).mean_surface_diffusiveness;
+    m_mean_surface_diffusiveness = NucleusConstants::fmToGeVm1*NuclearParameters::get(m_atomic_num).mean_surface_diffusiveness;
 }
 
 
@@ -276,9 +296,11 @@ void Nucleus::set_sampling_range()
 
 void Nucleus::safe_delete_pos()
 {
-    if (m_nucleon_pos)
+    if (nullptr != m_nucleon_pos)
+    {
         delete[] m_nucleon_pos;
-    m_nucleon_pos = nullptr;
+        m_nucleon_pos = nullptr;
+    }
 }
 
 
@@ -287,16 +309,38 @@ void Nucleus::prepare_pos()
     safe_delete_pos();
 
     m_nucleon_pos = new(std::nothrow) NucleonPos [m_atomic_num];
-    if (m_nucleon_pos == nullptr)
+    if (nullptr == m_nucleon_pos)
+        exit(31);
+}
+
+
+void Nucleus::safe_delete_nucleon_weights()
+{
+    if (nullptr != m_nucleon_weights)
+    {
+        delete[] m_nucleon_weights;
+        m_nucleon_weights = nullptr;
+    }
+}
+
+
+void Nucleus::prepare_nucleon_weights()
+{
+    safe_delete_nucleon_weights();
+
+    m_nucleon_pos = new(std::nothrow) NucleonPos [m_atomic_num];
+    if (nullptr == m_nucleon_pos)
         exit(31);
 }
 
 
 void Nucleus::safe_delete_rng()
 {
-    if (m_rng)
+    if (nullptr != m_rng)
+    {
         delete m_rng;
-    m_rng = nullptr;
+        m_rng = nullptr;
+    }
 }
 
 

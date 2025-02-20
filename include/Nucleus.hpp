@@ -1,6 +1,9 @@
 #pragma once
+#ifndef NUCLEUS_HPP
+#define NUCLEUS_HPP
 
 
+#include "NucleusConstants.hpp"
 #include <stdlib.h>
 #include <string>
 #include <math.h>
@@ -31,17 +34,21 @@ protected:
     double m_mean_bulk_radius; // GeVm1 // avg radius of nuclei
     double m_mean_surface_diffusiveness; // GeVm1 // nucleus surface diffusiveness
     NucleonPos* m_nucleon_pos = nullptr; // 3D positions of nucleons, relative to center of mass
+    double* m_nucleon_weights = nullptr; // weights for invidual nucleon thicknesses; is not automatically sampled/initialized (use sample_nucleon_weights())
 
     double m_sampling_range;
     SamplingDistribution m_sampling_distribution;
     std::mt19937* m_rng = nullptr;
     std::uniform_real_distribution<double> m_dist_01u = std::uniform_real_distribution<double>(0.0, 1.0);
-    
+    std::lognormal_distribution<double> m_dist_lognorm = std::lognormal_distribution<double>(0.0, NucleusConstants::lognorm_sigma);
+
     inline double m_rand() { return m_dist_01u(*m_rng); }
+    inline double m_lognorm_rand() { return m_dist_lognorm(*m_rng); }
 
 public:
 
     virtual void sample();
+    void sample_nucleon_weights();
     void export_nucleon_positions(double impact_param_x, double impact_param_y, const std::string& filepath) const;
     double get_nucleon_thickness(double x, double y) const;
     uint get_atomic_num() const;
@@ -69,6 +76,8 @@ protected:
     void set_sampling_range();
     void safe_delete_pos();
     void prepare_pos();
+    void safe_delete_nucleon_weights();
+    void prepare_nucleon_weights();
     void safe_delete_rng();
     void prepare_rng(uint seed);
     void prepare_rng(const std::mt19937& rng);
@@ -90,3 +99,6 @@ namespace NormedSamplingDistributions
         return exp( -r_sqr/(2.0*sigma_sqr) );
     }
 }
+
+
+#endif // NUCLEUS_HPP
