@@ -13,6 +13,8 @@ sources:
 */
 
 #pragma once
+#ifndef NUCLEAR_PARAMETERS_HPP
+#define NUCLEAR_PARAMETERS_HPP
 
 
 #include <stdlib.h>
@@ -91,3 +93,6 @@ namespace NuclearParameters
         }
     }
 }
+
+
+#endif // NUCLEAR_PARAMETERS_HPP
