@@ -50,6 +50,7 @@ public:
 
     virtual void sample();
     void sample_nucleon_weights();
+    double get_nucleon_weight(uint n) const;
     void export_nucleon_positions(double impact_param_x, double impact_param_y, const std::string& filepath) const;
     double get_nucleon_thickness(double x, double y) const;
     uint get_atomic_num() const;

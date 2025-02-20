@@ -52,6 +52,12 @@ void Nucleus::sample_nucleon_weights()
 }
 
 
+double Nucleus::get_nucleon_weight (uint n) const
+{
+    return m_nucleon_weights[n];
+}
+
+
 void Nucleus::export_nucleon_positions (double impact_param_x, double impact_param_y, const std::string& filename) const
 {
     std::ofstream filestream;
