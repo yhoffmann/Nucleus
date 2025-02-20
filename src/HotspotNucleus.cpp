@@ -44,10 +44,10 @@ double HotspotNucleus::get_hotspot_thickness (double x, double y) const
     double thickness = 0.0;
 
     double inverse_r_sqr_divisor = 1.0/(2.0*m_hotspot_size*m_hotspot_size);
-    for (uint i=0, i_max=m_atomic_num*m_num_hotspots_per_nucleon; i<i_max; ++i)
+    for (uint i=0; i<m_num_hotspots_total; ++i)
     {
-        double delta_x = x-m_hotspot_pos[i].x;
-        double delta_y = y-m_hotspot_pos[i].y;
+        double delta_x = x - m_hotspot_pos[i].x;
+        double delta_y = y - m_hotspot_pos[i].y;
 
         double r_sqr = delta_x*delta_x + delta_y*delta_y;
 
@@ -64,15 +64,28 @@ uint HotspotNucleus::get_num_hotspots_per_nucleon() const
 }
 
 
+uint HotspotNucleus::get_num_hotspots_total() const
+{
+    return m_num_hotspots_total;
+}
+
+
 const HotspotPos* HotspotNucleus::get_hotspot_pos (uint nucleon_num, uint hotspot_num) const
 {
-    return m_hotspot_pos+nucleon_num*m_num_hotspots_per_nucleon+hotspot_num;
+    return &m_hotspot_pos[nucleon_num*m_num_hotspots_per_nucleon + hotspot_num];
+}
+
+
+const HotspotPos* HotspotNucleus::get_hotspot_pos (uint hotspot_num_absolute) const
+{
+    return &m_hotspot_pos[hotspot_num_absolute];
 }
 
 
 HotspotNucleus::HotspotNucleus (uint seed, uint atomic_num, uint num_hotspots_per_nucleon, double nucleon_size, double hotspot_size, double mean_bulk_radius, double mean_surface_diffusiveness, SamplingDistribution sampling_distribution)    
     : Nucleus(seed, atomic_num, nucleon_size, mean_bulk_radius, mean_surface_diffusiveness, sampling_distribution)
     , m_num_hotspots_per_nucleon(num_hotspots_per_nucleon)
+    , m_num_hotspots_total(atomic_num * num_hotspots_per_nucleon)
     , m_hotspot_size(hotspot_size)
 {   
     prepare_hotspot_pos();
@@ -83,6 +96,7 @@ HotspotNucleus::HotspotNucleus (uint seed, uint atomic_num, uint num_hotspots_pe
 HotspotNucleus::HotspotNucleus (const HotspotNucleus& other)
     : Nucleus(other)
     , m_num_hotspots_per_nucleon(other.m_num_hotspots_per_nucleon)
+    , m_num_hotspots_total(other.m_num_hotspots_total)
     , m_hotspot_size(other.m_hotspot_size)
 {
     prepare_hotspot_pos();
@@ -93,6 +107,7 @@ HotspotNucleus::HotspotNucleus (const HotspotNucleus& other)
 HotspotNucleus::HotspotNucleus (HotspotNucleus&& other)
     : Nucleus(std::move(other))
     , m_num_hotspots_per_nucleon(other.m_num_hotspots_per_nucleon)
+    , m_num_hotspots_total(other.m_num_hotspots_total)
     , m_hotspot_size(other.m_hotspot_size)
     , m_hotspot_pos(other.m_hotspot_pos)
 {
@@ -107,6 +122,7 @@ HotspotNucleus& HotspotNucleus::operator= (const HotspotNucleus& other)
 
     Nucleus::operator=(other);
     m_num_hotspots_per_nucleon = other.m_num_hotspots_per_nucleon;
+    m_num_hotspots_total = other.m_num_hotspots_total;
     m_hotspot_pos = other.m_hotspot_pos;
     m_hotspot_size = other.m_hotspot_size;
 
@@ -124,6 +140,7 @@ HotspotNucleus& HotspotNucleus::operator= (HotspotNucleus&& other)
 
     Nucleus::operator=(std::move(other));
     m_num_hotspots_per_nucleon = other.m_num_hotspots_per_nucleon;
+    m_num_hotspots_total = other.m_num_hotspots_total;
     m_hotspot_pos = other.m_hotspot_pos;
     m_hotspot_size = other.m_hotspot_size;
 
