@@ -89,18 +89,48 @@ void HotspotNucleus::sample_hotspot_weights()
     if (nullptr == m_nucleon_weights) // nucleon weights not set
     {
         for (uint h=0; h<m_num_hotspots_total; h++)
-        {
             m_hotspot_weights[h] = m_lognorm_rand();
-        }
     }
-    else // nucleon weights set, need to consider as well
+    else // nucleon weights set
     {
         for (uint n=0; n<m_atomic_num; n++)
-        {
             for (uint h=0; h<m_num_hotspots_per_nucleon; h++)
-            {
                 m_hotspot_weights[n*m_num_hotspots_per_nucleon + h] = m_lognorm_rand() * get_nucleon_weight(n);
-            }
+    }
+}
+
+
+void HotspotNucleus::sample_hotspot_weights_fixed_avg()
+{
+    prepare_hotspot_weights();
+
+    for (uint h=0; h<m_num_hotspots_total; h++)
+        m_hotspot_weights[h] = m_lognorm_rand();
+
+    if (nullptr == m_nucleon_weights)
+    {
+        double avg = 0.0;
+        for (uint h=0; h<m_num_hotspots_total; h++)
+            avg += get_hotspot_weight(h);
+
+        avg /= double(m_num_hotspots_per_nucleon);
+    
+        for (uint h=0; h<m_num_hotspots_total; h++)
+            m_hotspot_weights[h] /= avg;
+    }
+    else // nucleon weights set
+    {
+        double num_double = double(get_num_hotspots_per_nucleon());
+        for (uint n=0; n<m_atomic_num; n++)
+        {
+            double avg = 0.0;
+            for (uint h=0; h<m_num_hotspots_per_nucleon; h++)
+                avg += get_hotspot_weight(n, h);
+
+            double avg_inverse_times_nucleon_weight = num_double / avg * get_nucleon_weight(n);
+
+            for (uint h=0; h<m_num_hotspots_per_nucleon; h++)
+                m_hotspot_weights[n*m_num_hotspots_per_nucleon + h] *= avg_inverse_times_nucleon_weight;
         }
     }
 }
@@ -140,6 +170,7 @@ HotspotNucleus::HotspotNucleus (const HotspotNucleus& other)
 
     if (nullptr != other.m_hotspot_weights)
     {
+        safe_delete_hotspot_weights();
         prepare_hotspot_weights();
         std::copy(other.m_hotspot_weights, other.m_hotspot_weights + m_num_hotspots_total, m_hotspot_weights);
     }
@@ -175,6 +206,7 @@ HotspotNucleus& HotspotNucleus::operator= (const HotspotNucleus& other)
 
     if (nullptr != other.m_hotspot_weights)
     {
+        safe_delete_hotspot_weights();
         prepare_hotspot_weights();
         std::copy(other.m_hotspot_weights, other.m_hotspot_weights + m_num_hotspots_total, m_hotspot_weights);
     }
@@ -205,6 +237,7 @@ HotspotNucleus& HotspotNucleus::operator= (HotspotNucleus&& other)
 HotspotNucleus::~HotspotNucleus()
 {
     safe_delete_hotspot_pos();
+    safe_delete_hotspot_weights();
 }
 
 
@@ -240,11 +273,12 @@ void HotspotNucleus::safe_delete_hotspot_weights()
 
 void HotspotNucleus::prepare_hotspot_weights()
 {
-    safe_delete_hotspot_weights();
-
-    m_hotspot_weights = new(std::nothrow) double [m_num_hotspots_total];
     if (nullptr == m_hotspot_weights)
-        exit(32);
+    {
+        m_hotspot_weights = new(std::nothrow) double [m_num_hotspots_total];
+        if (nullptr == m_hotspot_weights)
+            exit(32);
+    }
 }
 
 

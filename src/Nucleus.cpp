@@ -52,6 +52,21 @@ void Nucleus::sample_nucleon_weights()
 }
 
 
+void Nucleus::sample_nucleon_weights_fixed_avg()
+{
+    sample_nucleon_weights();
+
+    double avg = 0.0;
+    for (uint n=0; n<m_atomic_num; n++)
+        avg += get_nucleon_weight(n);
+
+    avg /= double(get_atomic_num());
+
+    for (uint n=0; n<m_atomic_num; n++)
+        m_nucleon_weights[n] /= avg;
+}
+
+
 double Nucleus::get_nucleon_weight (uint n) const
 {
     return m_nucleon_weights[n];
@@ -236,6 +251,7 @@ Nucleus& Nucleus::operator= (const Nucleus& other)
 
     if (nullptr != other.m_nucleon_weights)
     {
+        safe_delete_nucleon_weights();
         prepare_nucleon_weights();
         std::copy(other.m_nucleon_weights, other.m_nucleon_weights + m_atomic_num, m_nucleon_weights);
     }
@@ -282,13 +298,13 @@ Nucleus::~Nucleus()
 
 void Nucleus::set_mean_bulk_radius()
 {
-    m_mean_bulk_radius = NucleusConstants::fmToGeVm1*NuclearParameters::get(m_atomic_num).mean_bulk_radius;
+    m_mean_bulk_radius = NucleusConstants::fmToGeVm1 * NuclearParameters::get(m_atomic_num).mean_bulk_radius;
 }
 
 
 void Nucleus::set_mean_surface_diffusiveness()
 {
-    m_mean_surface_diffusiveness = NucleusConstants::fmToGeVm1*NuclearParameters::get(m_atomic_num).mean_surface_diffusiveness;
+    m_mean_surface_diffusiveness = NucleusConstants::fmToGeVm1 * NuclearParameters::get(m_atomic_num).mean_surface_diffusiveness;
 }
 
 
@@ -297,7 +313,7 @@ void Nucleus::set_sampling_range()
     switch (m_sampling_distribution)
     {
         case SamplingDistribution::WoodsSaxon:
-            m_sampling_range = m_mean_bulk_radius+10.0*m_mean_surface_diffusiveness;
+            m_sampling_range = m_mean_bulk_radius + 10.0*m_mean_surface_diffusiveness;
         break;
 
         case SamplingDistribution::Gaussian:
@@ -338,11 +354,12 @@ void Nucleus::safe_delete_nucleon_weights()
 
 void Nucleus::prepare_nucleon_weights()
 {
-    safe_delete_nucleon_weights();
-
-    m_nucleon_weights = new(std::nothrow) double [m_atomic_num];
-    if (nullptr == m_nucleon_pos)
-        exit(31);
+    if (nullptr == m_nucleon_weights)
+    {
+        m_nucleon_weights = new(std::nothrow) double [m_atomic_num];
+        if (nullptr == m_nucleon_weights)
+            exit(31);
+    }
 }
 
 

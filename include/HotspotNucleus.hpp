@@ -42,6 +42,7 @@ public:
     const HotspotPos* get_hotspot_pos(uint hotspot_num_absolute) const; // provide absolute hotspot number; e.g. 4 if you want to access hotspot 1 in nucleon 1 (both 0-indexed!!!) in the case of 3 hotspots per nucleon and at least 2 nucleons
 
     void sample_hotspot_weights();
+    void sample_hotspot_weights_fixed_avg();
     double get_hotspot_weight(uint nucleon_num, uint hotspot_num) const;
     double get_hotspot_weight(uint hotspot_num_absolute) const;
 
