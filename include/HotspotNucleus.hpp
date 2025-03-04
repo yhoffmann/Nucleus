@@ -47,7 +47,7 @@ public:
     double get_hotspot_weight(uint hotspot_num_absolute) const;
 
     HotspotNucleus() = delete;
-    HotspotNucleus(uint seed, uint atomic_num = 1, uint num_hotspots_per_nucleon = 3, double nucleon_size = std::sqrt(3.3), double hotspot_size = std::sqrt(0.7), double mean_bulk_radius = 0.0001, double mean_surface_diffusiveness = 0.0, SamplingDistribution sampling_distribution = WoodsSaxon);
+    HotspotNucleus(uint seed, uint atomic_num = 1, uint num_hotspots_per_nucleon = 3, double nucleon_size = std::sqrt(3.3), double hotspot_size = std::sqrt(0.7), SamplingDistribution sampling_distribution = WoodsSaxon);
     HotspotNucleus(const HotspotNucleus&);
     HotspotNucleus(HotspotNucleus&&);
     HotspotNucleus& operator=(const HotspotNucleus&);

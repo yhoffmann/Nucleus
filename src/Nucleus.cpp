@@ -176,7 +176,7 @@ void Nucleus::seed (const std::mt19937& rng)
 }
 
 
-Nucleus::Nucleus (uint seed, uint atomic_num, double nucleon_size, double mean_bulk_radius, double mean_surface_diffusiveness, SamplingDistribution sampling_distribution)
+Nucleus::Nucleus (uint seed, uint atomic_num, double nucleon_size, SamplingDistribution sampling_distribution)
     : m_atomic_num(atomic_num)
     , m_nucleon_size(nucleon_size)
     , m_sampling_distribution(sampling_distribution)

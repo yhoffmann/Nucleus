@@ -148,8 +148,8 @@ double HotspotNucleus::get_hotspot_weight (uint hotspot_num_absolute) const
 }
 
 
-HotspotNucleus::HotspotNucleus (uint seed, uint atomic_num, uint num_hotspots_per_nucleon, double nucleon_size, double hotspot_size, double mean_bulk_radius, double mean_surface_diffusiveness, SamplingDistribution sampling_distribution)    
-    : Nucleus(seed, atomic_num, nucleon_size, mean_bulk_radius, mean_surface_diffusiveness, sampling_distribution)
+HotspotNucleus::HotspotNucleus (uint seed, uint atomic_num, uint num_hotspots_per_nucleon, double nucleon_size, double hotspot_size, SamplingDistribution sampling_distribution)    
+    : Nucleus(seed, atomic_num, nucleon_size, sampling_distribution)
     , m_num_hotspots_per_nucleon(num_hotspots_per_nucleon)
     , m_num_hotspots_total(atomic_num * num_hotspots_per_nucleon)
     , m_hotspot_size(hotspot_size)

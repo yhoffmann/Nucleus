@@ -65,7 +65,7 @@ public:
     void seed(const std::mt19937& rng);
 
     Nucleus() = delete;
-    Nucleus(uint seed, uint atomic_num = 1, double nucleon_size = std::sqrt(3.3), double mean_bulk_radius = 0.0001, double mean_surface_diffusiveness = 0.0, SamplingDistribution sampling_distribution = WoodsSaxon);
+    Nucleus(uint seed, uint atomic_num = 1, double nucleon_size = std::sqrt(3.3), SamplingDistribution sampling_distribution = WoodsSaxon);
     Nucleus(const Nucleus&);
     Nucleus(Nucleus&&);
     Nucleus& operator=(const Nucleus&);
