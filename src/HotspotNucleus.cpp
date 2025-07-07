@@ -170,12 +170,13 @@ HotspotNucleus& HotspotNucleus::operator=(const HotspotNucleus& other) {
   m_hotspot_pos = other.m_hotspot_pos;
   m_hotspot_size = other.m_hotspot_size;
 
+  safe_delete_hotspot_pos();
   prepare_hotspot_pos();
   std::copy(other.m_hotspot_pos, other.m_hotspot_pos + m_num_hotspots_total,
             m_hotspot_pos);
 
+  safe_delete_hotspot_weights();
   if (nullptr != other.m_hotspot_weights) {
-    safe_delete_hotspot_weights();
     prepare_hotspot_weights();
     std::copy(other.m_hotspot_weights,
               other.m_hotspot_weights + m_num_hotspots_total,
@@ -189,6 +190,10 @@ HotspotNucleus& HotspotNucleus::operator=(HotspotNucleus&& other) {
   if (this == &other) return *this;
 
   Nucleus::operator=(std::move(other));
+
+  safe_delete_hotspot_pos();
+  safe_delete_hotspot_weights();
+
   m_num_hotspots_per_nucleon = other.m_num_hotspots_per_nucleon;
   m_num_hotspots_total = other.m_num_hotspots_total;
   m_hotspot_size = other.m_hotspot_size;
@@ -214,10 +219,10 @@ void HotspotNucleus::safe_delete_hotspot_pos() {
 }
 
 void HotspotNucleus::prepare_hotspot_pos() {
-  safe_delete_hotspot_pos();
-
-  m_hotspot_pos = new (std::nothrow) HotspotPos[m_num_hotspots_total];
-  if (nullptr == m_hotspot_pos) exit(32);
+  if (nullptr == m_hotspot_pos) {
+    m_hotspot_pos = new (std::nothrow) HotspotPos[m_num_hotspots_total];
+    if (nullptr == m_hotspot_pos) exit(32);
+  }
 }
 
 void HotspotNucleus::safe_delete_hotspot_weights() {

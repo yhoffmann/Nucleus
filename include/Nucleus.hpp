@@ -131,8 +131,8 @@ class Nucleus {
   void set_mean_bulk_radius();
   void set_mean_surface_diffusiveness();
   void set_sampling_range();
-  void safe_delete_pos();
-  void prepare_pos();
+  void safe_delete_nucleon_pos();
+  void prepare_nucleon_pos();
   void safe_delete_nucleon_weights();
   void prepare_nucleon_weights();
   void safe_delete_rng();

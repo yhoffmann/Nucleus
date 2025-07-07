@@ -3,7 +3,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <random>
@@ -147,7 +146,7 @@ Nucleus::Nucleus(uint seed, uint atomic_num, double nucleon_size,
 
   set_sampling_range();
 
-  prepare_pos();
+  prepare_nucleon_pos();
   sample();
 }
 
@@ -160,7 +159,7 @@ Nucleus::Nucleus(const Nucleus& other)
     , m_sampling_distribution(other.m_sampling_distribution) {
   prepare_rng(*other.m_rng);
 
-  prepare_pos();
+  prepare_nucleon_pos();
   std::copy(other.m_nucleon_pos, other.m_nucleon_pos + m_atomic_num,
             m_nucleon_pos);
 
@@ -199,12 +198,13 @@ Nucleus& Nucleus::operator=(const Nucleus& other) {
 
   prepare_rng(*other.m_rng);
 
-  prepare_pos();
+  safe_delete_nucleon_pos();
+  prepare_nucleon_pos();
   std::copy(other.m_nucleon_pos, other.m_nucleon_pos + m_atomic_num,
             m_nucleon_pos);
 
+  safe_delete_nucleon_weights();
   if (nullptr != other.m_nucleon_weights) {
-    safe_delete_nucleon_weights();
     prepare_nucleon_weights();
     std::copy(other.m_nucleon_weights, other.m_nucleon_weights + m_atomic_num,
               m_nucleon_weights);
@@ -217,7 +217,7 @@ Nucleus& Nucleus::operator=(Nucleus&& other) {
   if (this == &other) return *this;
 
   safe_delete_rng();
-  safe_delete_pos();
+  safe_delete_nucleon_pos();
   safe_delete_nucleon_weights();
 
   m_atomic_num = other.m_atomic_num;
@@ -240,7 +240,7 @@ Nucleus& Nucleus::operator=(Nucleus&& other) {
 
 Nucleus::~Nucleus() {
   safe_delete_rng();
-  safe_delete_pos();
+  safe_delete_nucleon_pos();
   safe_delete_nucleon_weights();
 }
 
@@ -267,18 +267,18 @@ void Nucleus::set_sampling_range() {
   }
 }
 
-void Nucleus::safe_delete_pos() {
+void Nucleus::safe_delete_nucleon_pos() {
   if (nullptr != m_nucleon_pos) {
     delete[] m_nucleon_pos;
     m_nucleon_pos = nullptr;
   }
 }
 
-void Nucleus::prepare_pos() {
-  safe_delete_pos();
-
-  m_nucleon_pos = new (std::nothrow) NucleonPos[m_atomic_num];
-  if (nullptr == m_nucleon_pos) exit(31);
+void Nucleus::prepare_nucleon_pos() {
+  if (nullptr == m_nucleon_pos) {
+    m_nucleon_pos = new (std::nothrow) NucleonPos[m_atomic_num];
+    if (nullptr == m_nucleon_pos) exit(31);
+  }
 }
 
 void Nucleus::safe_delete_nucleon_weights() {
@@ -303,9 +303,7 @@ void Nucleus::safe_delete_rng() {
 }
 
 void Nucleus::prepare_rng(uint seed) {
-  safe_delete_rng();
-
-  m_rng = new std::mt19937(seed);
+  if (nullptr == m_rng) m_rng = new std::mt19937(seed);
 }
 
 void Nucleus::prepare_rng(const std::mt19937& rng) {
