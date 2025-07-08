@@ -86,6 +86,8 @@ class Nucleus {
   // sample nucleon weights (but fix nucleus total thicknes to always be the
   // same)
   void sample_nucleon_weights_fixed_avg();
+  // reset nucleon weights to `1.0`
+  void reset_nucleon_weights();
   // get nucleon weight for nucleon n
   double get_nucleon_weight(uint n) const;
   // write nucleon positions to file

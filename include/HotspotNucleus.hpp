@@ -85,11 +85,16 @@ class HotspotNucleus : public Nucleus {
    * will be set to `3.0`
    */
   void sample_hotspot_weights();
-  /* sample the hotspot weights (optional)
+  /* sample the hotspot weights (optional) but with fixed average
    * -same as `samples_hotspot_weights()` but the individual weights will be
    * rescaled such that the total average of weights is `1.0`
    */
   void sample_hotspot_weights_fixed_avg();
+  // reset the hotspot weights to `1.0`
+  void reset_hotspot_weights();
+  // reset all weights (nucleon and hotspot), this just calls
+  // `reset_nucleon_weights()` and `reset_hotspot_weights()`
+  void reset_weights();
   // get hotspot weight of hotspot `hotspot_num` in nucleon `nucleon_num`
   double get_hotspot_weight(uint nucleon_num, uint hotspot_num) const;
   // get hotspot weight of hotspot with absolute index `hotspot_num_absoulute`

@@ -39,8 +39,6 @@ void Nucleus::sample() {
 }
 
 void Nucleus::sample_nucleon_weights() {
-  prepare_nucleon_weights();
-
   for (uint n = 0; n < m_atomic_num; n++)
     m_nucleon_weights[n] = m_lognorm_rand();
 }
@@ -54,6 +52,10 @@ void Nucleus::sample_nucleon_weights_fixed_avg() {
   avg /= double(get_atomic_num());
 
   for (uint n = 0; n < m_atomic_num; n++) m_nucleon_weights[n] /= avg;
+}
+
+void Nucleus::reset_nucleon_weights() {
+  for (uint i = 0; i < m_atomic_num; i++) m_nucleon_weights[i] = 1.0;
 }
 
 double Nucleus::get_nucleon_weight(uint n) const {
@@ -148,6 +150,9 @@ Nucleus::Nucleus(uint seed, uint atomic_num, double nucleon_size,
 
   prepare_nucleon_pos();
   sample();
+
+  prepare_nucleon_weights();
+  reset_nucleon_weights();
 }
 
 Nucleus::Nucleus(const Nucleus& other)
@@ -157,17 +162,15 @@ Nucleus::Nucleus(const Nucleus& other)
     , m_mean_surface_diffusiveness(other.m_mean_surface_diffusiveness)
     , m_sampling_range(other.m_sampling_range)
     , m_sampling_distribution(other.m_sampling_distribution) {
-  prepare_rng(*other.m_rng);
-
   prepare_nucleon_pos();
   std::copy(other.m_nucleon_pos, other.m_nucleon_pos + m_atomic_num,
             m_nucleon_pos);
 
-  if (nullptr != other.m_nucleon_weights) {
-    prepare_nucleon_weights();
-    std::copy(other.m_nucleon_weights, other.m_nucleon_weights + m_atomic_num,
-              m_nucleon_weights);
-  }
+  prepare_nucleon_weights();
+  std::copy(other.m_nucleon_weights, other.m_nucleon_weights + m_atomic_num,
+            m_nucleon_weights);
+
+  prepare_rng(*other.m_rng);
 }
 
 Nucleus::Nucleus(Nucleus&& other)
@@ -196,19 +199,17 @@ Nucleus& Nucleus::operator=(const Nucleus& other) {
   m_sampling_range = other.m_sampling_range;
   m_sampling_distribution = other.m_sampling_distribution;
 
-  prepare_rng(*other.m_rng);
-
   safe_delete_nucleon_pos();
   prepare_nucleon_pos();
   std::copy(other.m_nucleon_pos, other.m_nucleon_pos + m_atomic_num,
             m_nucleon_pos);
 
   safe_delete_nucleon_weights();
-  if (nullptr != other.m_nucleon_weights) {
-    prepare_nucleon_weights();
-    std::copy(other.m_nucleon_weights, other.m_nucleon_weights + m_atomic_num,
-              m_nucleon_weights);
-  }
+  prepare_nucleon_weights();
+  std::copy(other.m_nucleon_weights, other.m_nucleon_weights + m_atomic_num,
+            m_nucleon_weights);
+
+  prepare_rng(*other.m_rng);
 
   return *this;
 }
