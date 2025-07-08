@@ -69,7 +69,7 @@ void Nucleus::export_nucleon_positions(double impact_param_x,
 #ifndef _QUIET
     std::cerr << "Could not open file " << filename << std::endl;
 #endif
-    exit(33);
+    exit(NUCLEUS_ERROR_COULDNT_OPEN);
   }
 
   filestream << "# " << m_mean_bulk_radius << " " << impact_param_x << " "
@@ -277,7 +277,7 @@ void Nucleus::safe_delete_nucleon_pos() {
 void Nucleus::prepare_nucleon_pos() {
   if (nullptr == m_nucleon_pos) {
     m_nucleon_pos = new (std::nothrow) NucleonPos[m_atomic_num];
-    if (nullptr == m_nucleon_pos) exit(31);
+    if (nullptr == m_nucleon_pos) exit(NUCLEUS_ERROR_BAD_ALLOC);
   }
 }
 
@@ -291,7 +291,7 @@ void Nucleus::safe_delete_nucleon_weights() {
 void Nucleus::prepare_nucleon_weights() {
   if (nullptr == m_nucleon_weights) {
     m_nucleon_weights = new (std::nothrow) double[m_atomic_num];
-    if (nullptr == m_nucleon_weights) exit(31);
+    if (nullptr == m_nucleon_weights) exit(NUCLEUS_ERROR_BAD_ALLOC);
   }
 }
 

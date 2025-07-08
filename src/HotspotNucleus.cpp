@@ -221,7 +221,7 @@ void HotspotNucleus::safe_delete_hotspot_pos() {
 void HotspotNucleus::prepare_hotspot_pos() {
   if (nullptr == m_hotspot_pos) {
     m_hotspot_pos = new (std::nothrow) HotspotPos[m_num_hotspots_total];
-    if (nullptr == m_hotspot_pos) exit(32);
+    if (nullptr == m_hotspot_pos) exit(NUCLEUS_ERROR_BAD_ALLOC);
   }
 }
 
@@ -235,7 +235,7 @@ void HotspotNucleus::safe_delete_hotspot_weights() {
 void HotspotNucleus::prepare_hotspot_weights() {
   if (nullptr == m_hotspot_weights) {
     m_hotspot_weights = new (std::nothrow) double[m_num_hotspots_total];
-    if (nullptr == m_hotspot_weights) exit(32);
+    if (nullptr == m_hotspot_weights) exit(NUCLEUS_ERROR_BAD_ALLOC);
   }
 }
 
