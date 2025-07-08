@@ -19,8 +19,11 @@
 
 #include <iostream>
 
+#define NUCLEUS_ERROR_NO_NUC_PARAMS 30
+
+namespace NuclearParameters {
 static constexpr const char* const ERROR_NO_DATA =
-    "No data for the nucleon number. Exiting!";
+    "No data for this nucleon number. Exiting!";
 
 struct NucleusParameters {
   double mean_bulk_radius;            // R
@@ -84,7 +87,7 @@ inline const NucleusParameters& get(uint atomic_num) {
 
     default:
       std::cerr << ERROR_NO_DATA << std::endl;
-      exit(30);
+      exit(NUCLEUS_ERROR_NO_NUC_PARAMS);
   }
 }
 }  // namespace NuclearParameters

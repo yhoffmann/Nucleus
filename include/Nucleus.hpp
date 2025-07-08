@@ -10,7 +10,6 @@
 
 #include "NucleusConstants.hpp"
 
-#define NUCLEUS_ERROR_NO_NUC_PARAMS 30
 #define NUCLEUS_ERROR_BAD_ALLOC 31
 #define NUCLEUS_ERROR_COULDNT_OPEN 32
 
