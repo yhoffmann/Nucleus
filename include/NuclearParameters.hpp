@@ -3,8 +3,7 @@
  *
  * [1]
  *     Improved version of the PHOBOS Glauber Monte Carlo
- *     Loizides, C. et al.
- *     SoftwareX, Volume 1, 13 - 18, 2015
+ *     Loizides, C. et al. SoftwareX, Volume 1, 13 - 18, 2015
  *
  * [2]
  *     Improved Monte Carlo Glauber predictions at present and future nuclear
