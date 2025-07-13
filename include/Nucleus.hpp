@@ -144,6 +144,10 @@ class Nucleus {
   void prepare_rng(uint seed);
   void prepare_rng(const std::mt19937& rng);
   void sample_single_pos(NucleonPos& pos);
+  void rotate_x_single_nucleon(NucleonPos& pos, double angle);
+  void rotate_y_single_nucleon(NucleonPos& pos, double angle);
+  void rotate_z_single_nucleon(NucleonPos& pos, double angle);
+  void rotate();
   bool fits_nucleon_distribution(double r_sqr);
 };
 

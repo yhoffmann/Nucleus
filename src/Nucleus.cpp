@@ -335,6 +335,44 @@ void Nucleus::sample_single_pos(NucleonPos& pos) {
   }
 }
 
+/* Euler-angle rotation functions and logic stolen (with permission) from:
+ * https://github.com/Non-Equilibrium-QCD/McDipper
+ */
+void Nucleus::rotate_x_single_nucleon(NucleonPos& pos, double angle) {
+  NucleonPos old_pos = pos;
+
+  pos.y = old_pos.y * cos(angle) - old_pos.z * sin(angle);
+  pos.z = old_pos.y * sin(angle) + old_pos.z * cos(angle);
+}
+
+void Nucleus::rotate_y_single_nucleon(NucleonPos& pos, double angle) {
+  NucleonPos old_pos = pos;
+
+  pos.x = old_pos.x * cos(angle) + old_pos.z * sin(angle);
+  pos.z = old_pos.z * cos(angle) - old_pos.x * sin(angle);
+}
+
+void Nucleus::rotate_z_single_nucleon(NucleonPos& pos, double angle) {
+  NucleonPos old_pos = pos;
+
+  pos.x = old_pos.x * cos(angle) - old_pos.y * sin(angle);
+  pos.z = old_pos.x * sin(angle) + old_pos.y * cos(angle);
+}
+
+void Nucleus::rotate() {
+  double angle_x = 2.0 * M_PI * m_rand();
+  // FIXME: maybe wrong, need to check but does not matter for now
+  double angle_y = M_PI * (m_rand() - 0.5);
+  double angle_z = 2.0 * M_PI * m_rand();
+  for (uint n = 0; n < m_atomic_num; n++) {
+    NucleonPos& pos = m_nucleon_pos[n];
+
+    rotate_x_single_nucleon(pos, angle_x);
+    rotate_y_single_nucleon(pos, angle_y);
+    rotate_z_single_nucleon(pos, angle_z);
+  }
+}
+
 bool Nucleus::fits_nucleon_distribution(double r_sqr) {
   switch (m_sampling_distribution) {
     case SamplingDistribution::WoodsSaxon:
