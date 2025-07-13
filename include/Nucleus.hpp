@@ -143,7 +143,7 @@ class Nucleus {
   void safe_delete_rng();
   void prepare_rng(uint seed);
   void prepare_rng(const std::mt19937& rng);
-  void sample_single_pos(NucleonPos* nucleon_pos);
+  void sample_single_pos(NucleonPos& pos);
   bool fits_nucleon_distribution(double r_sqr);
 };
 

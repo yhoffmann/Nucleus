@@ -19,7 +19,7 @@ void Nucleus::sample() {
   NucleonPos center_of_mass = {0.0, 0.0, 0.0};
 
   for (uint n = 0; n < m_atomic_num; n++) {
-    sample_single_pos(m_nucleon_pos + n);
+    sample_single_pos(m_nucleon_pos[n]);
 
     center_of_mass.x += m_nucleon_pos[n].x;
     center_of_mass.y += m_nucleon_pos[n].y;
@@ -313,7 +313,7 @@ void Nucleus::prepare_rng(const std::mt19937& rng) {
   m_rng = new std::mt19937(rng);
 }
 
-void Nucleus::sample_single_pos(NucleonPos* nucleon_pos) {
+void Nucleus::sample_single_pos(NucleonPos& pos) {
   while (true) {
     NucleonPos sampled_pos;
 
@@ -326,9 +326,9 @@ void Nucleus::sample_single_pos(NucleonPos* nucleon_pos) {
                    sampled_pos.z * sampled_pos.z;
 
     if (fits_nucleon_distribution(r_sqr)) {
-      nucleon_pos->x = sampled_pos.x;
-      nucleon_pos->y = sampled_pos.y;
-      nucleon_pos->z = sampled_pos.z;
+      pos.x = sampled_pos.x;
+      pos.y = sampled_pos.y;
+      pos.z = sampled_pos.z;
 
       return;
     }
