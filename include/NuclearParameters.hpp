@@ -47,6 +47,7 @@ enum Type : uint {
   Pb208 = 208,
 };
 
+// data from [1] and [2]
 const struct {
   NucleusParameters p = {1.0, 0.0001, 0.0};
   NucleusParameters O16 = {2.608, 0.513, -0.51};
