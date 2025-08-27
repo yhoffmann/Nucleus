@@ -19,7 +19,8 @@ struct HotspotPos {
  * -derived class on top of a Nucleus object
  * -contains additionally the transverse positions of hotspots
  *
- * Construct this as you would the Nucleus class.
+ * Construct this as you would the Nucleus class except for the new parameter
+ * `num_hotspots_per_nucleon`.
  * Access the hotspot positions with either `get_hotspot_pos(uint)` or
  * `get_hotspot_pos(uint, uint)`, where the former takes the absolute hotspot
  * index (e.g. `5` for the "last" hotspot in nucleon 1 for
