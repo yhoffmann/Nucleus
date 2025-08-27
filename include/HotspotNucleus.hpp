@@ -17,16 +17,16 @@ struct HotspotPos {
 
 /* HotspotNucleus class
  * -derived class on top of a Nucleus object
- * -contains additionally the transverse positions of nucleons
+ * -contains additionally the transverse positions of hotspots
  *
  * Construct this as you would the Nucleus class.
  * Access the hotspot positions with either `get_hotspot_pos(uint)` or
  * `get_hotspot_pos(uint, uint)`, where the former takes the absolute hotspot
  * index (e.g. `5` for the "last" hotspot in nucleon 1 for
  * `num_hotspots_per_nucleon=3`), and the latter takes both nucleon index and
- * hotspot index (using the same example as before: `1` and `3`).
+ * hotspot index (using the same example as before: `1` and `2`).
  *
- * Also has support for giving hotspots difference amounts of color charge by
+ * Also has support for giving hotspots different amounts of color charge by
  * applying individual weight factors. See `sample_hotspot_weights()`.
  */
 class HotspotNucleus : public Nucleus {
@@ -61,7 +61,7 @@ class HotspotNucleus : public Nucleus {
   uint get_num_hotspots_total() const;
 
   /* return the transvese position of hotspot `hotspot_num` in nucleon
-   * `nucleon_num` -both paramters are zero-index, of course:
+   * `nucleon_num` -both paramters are zero-indexed, of course:
    * --`hotspot_num` is relative to a single nucleon → `hotspot_num = 0, ...,
    * num_hotspots_per_nucleon-1`
    * --`nucleon_num = 0, ..., atomic_num-1`
